@@ -1,6 +1,7 @@
 """Useful Datasets"""
 import pathlib
 from typing import Union
+
 import pandas as pd
 
 
@@ -8,7 +9,6 @@ def _read_data(file_name: str, **kwargs) -> Union[pd.Series, pd.DataFrame]:
     """Reads a data file from pyesg/data. Optionally provide kwargs to pd.read_csv"""
     directory = pathlib.Path(__file__).parents[0]
     file_path = pathlib.Path(directory, file_name).resolve()
-    print(file_path)
     return pd.read_csv(file_path, **kwargs)
 
 

@@ -1,5 +1,6 @@
 """Tests for Estimator Classes"""
 import unittest
+
 import numpy as np
 
 from pyesg.interpolators import NelsonSiegel, NelsonSiegelSvensson
