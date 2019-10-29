@@ -49,7 +49,7 @@ class NelsonSiegel(Interpolator):
         attributes = ["beta0", "beta1", "beta2", "tau"]
         return all([hasattr(self, a) for a in attributes])
 
-    def fit(self, X, y):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegel":
         """
         Fits the Nelson-Siegel interpolator using ordinary least squares
 
@@ -72,15 +72,17 @@ class NelsonSiegel(Interpolator):
         else:
             # keep tau fixed; solve for all betas
             def f(params, t, y):
+                assert self.tau is not None
                 return self.formula(t, *params, tau=self.tau) - y
 
             ls = least_squares(f, x0=[0.01, 0.01, 0.01], args=(X, y))
             self.beta0, self.beta1, self.beta2 = ls.x
         return self
 
-    def predict(self, X):
+    def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
         if self._check_fitted:
+            assert self.tau is not None
             return self.formula(X, self.beta0, self.beta1, self.beta2, self.tau)
         else:
             raise RuntimeError("Must call 'fit' first!")
@@ -136,7 +138,7 @@ class NelsonSiegelSvensson(Interpolator):
         attributes = ["beta0", "beta1", "beta2", "beta3", "tau0", "tau1"]
         return all([hasattr(self, a) for a in attributes])
 
-    def fit(self, X, y):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegelSvensson":
         """
         Fits the Nelson-Siegel-Svensson interpolator using ordinary least squares
 
@@ -159,15 +161,19 @@ class NelsonSiegelSvensson(Interpolator):
         else:
             # keep taus fixed; solve for all betas
             def f(params, t, y):
+                assert self.tau0 is not None
+                assert self.tau1 is not None
                 return self.formula(t, *params, tau0=self.tau0, tau1=self.tau1) - y
 
             ls = least_squares(f, x0=[0.01, 0.01, 0.01, 0.01], args=(X, y))
             self.beta0, self.beta1, self.beta2, self.beta3 = ls.x
         return self
 
-    def predict(self, X):
+    def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
         if self._check_fitted:
+            assert self.tau0 is not None
+            assert self.tau1 is not None
             return self.formula(
                 X, self.beta0, self.beta1, self.beta2, self.beta3, self.tau0, self.tau1
             )
