@@ -1,2 +1,2 @@
 """Top level imports"""
-from .estimators import NelsonSiegelEstimator, NelsonSiegelSvenssonEstimator
+from .interpolators import NelsonSiegel, NelsonSiegelSvensson

@@ -4,13 +4,13 @@ import numpy as np
 from scipy.optimize import least_squares
 
 
-class BaseEstimator:
-    """Base class for Estimators"""
+class Interpolator:
+    """Base class for Interpolators"""
 
 
-class NelsonSiegelEstimator(BaseEstimator):
+class NelsonSiegel(Interpolator):
     """
-    Nelson-Siegel Curve Estimator
+    Nelson-Siegel Curve Interpolator
 
     Parameters
     ----------
@@ -70,9 +70,9 @@ class NelsonSiegelEstimator(BaseEstimator):
         return self.formula(X, self.beta0, self.beta1, self.beta2, self.tau)
 
 
-class NelsonSiegelSvenssonEstimator(BaseEstimator):
+class NelsonSiegelSvensson(Interpolator):
     """
-    Nelson-Siegel-Svensson Curve Estimator
+    Nelson-Siegel-Svensson Curve Interpolator
 
     Parameters
     ----------

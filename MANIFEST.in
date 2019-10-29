@@ -2,4 +2,4 @@ include README.md
 include LICENSE.md
 include MANIFEST.in
 
-recursive-include data *
+recursive-include pyesg/datasets *

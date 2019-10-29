@@ -13,6 +13,9 @@ setup(
     install_requires=["numpy", "pandas", "scipy"],
     extras_require={"dev": ["pre-commit"]},
     include_package_data=True,
+    package_data={
+        "pyesg": ["../README.md", "../LICENSE.md", "../MANIFEST.in", "datasets/*"]
+    },
     test_suite="tests",
     zip_safe=False,
 )
