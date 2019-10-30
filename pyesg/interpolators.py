@@ -1,5 +1,5 @@
 """Estimator classes for interest rate curve interpolation"""
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import numpy as np
 
@@ -8,6 +8,15 @@ from scipy.optimize import least_squares
 
 class Interpolator:
     """Base class for Interpolators"""
+
+    @property
+    def _fitted_params(self):
+        return NotImplementedError
+
+    @property
+    def _check_fitted(self) -> bool:
+        """Returns a boolean indicating whether or not the model has been fitted"""
+        return all(x is not None for x in self._fitted_params.values())
 
 
 class NelsonSiegel(Interpolator):
@@ -22,7 +31,10 @@ class NelsonSiegel(Interpolator):
 
     def __init__(self, tau: Optional[float] = None) -> None:
         self._fit_tau = tau is None
-        self.tau = tau
+        self.tau = tau  # optionally fit parameter
+        self.beta0: Optional[float] = None  # fit parameter
+        self.beta1: Optional[float] = None  # fit parameter
+        self.beta2: Optional[float] = None  # fit parameter
 
     def __repr__(self):
         return "Nelson-Siegel Interpolator"
@@ -44,10 +56,12 @@ class NelsonSiegel(Interpolator):
         )
 
     @property
-    def _check_fitted(self) -> bool:
-        """Returns a boolean indicating whether or not the model has been fitted"""
-        attributes = ["beta0", "beta1", "beta2", "tau"]
-        return all([hasattr(self, a) for a in attributes])
+    def _fitted_params(self) -> Dict:
+        """
+        Returns a dictionary of fitted model parameters.
+        Parameters default to None if they haven't been fitted yet.
+        """
+        return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegel":
         """
@@ -82,8 +96,11 @@ class NelsonSiegel(Interpolator):
     def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
         if self._check_fitted:
+            assert self.beta0 is not None
+            assert self.beta1 is not None
+            assert self.beta2 is not None
             assert self.tau is not None
-            return self.formula(X, self.beta0, self.beta1, self.beta2, self.tau)
+            return self.formula(X, **self._fitted_params)
         else:
             raise RuntimeError("Must call 'fit' first!")
 
@@ -108,8 +125,12 @@ class NelsonSiegelSvensson(Interpolator):
         self, tau0: Optional[float] = None, tau1: Optional[float] = None
     ) -> None:
         self._fit_tau = (tau0 is None) or (tau1 is None)
-        self.tau0 = tau0
-        self.tau1 = tau1
+        self.tau0 = tau0  # optionally fit parameter
+        self.tau1 = tau1  # optionally fit parameter
+        self.beta0: Optional[float] = None  # fit parameter
+        self.beta1: Optional[float] = None  # fit parameter
+        self.beta2: Optional[float] = None  # fit parameter
+        self.beta3: Optional[float] = None  # fit parameter
 
     def __repr__(self):
         return "Nelson-Siegel-Svensson Interpolator"
@@ -134,9 +155,19 @@ class NelsonSiegelSvensson(Interpolator):
         )
 
     @property
-    def _check_fitted(self) -> bool:
-        attributes = ["beta0", "beta1", "beta2", "beta3", "tau0", "tau1"]
-        return all([hasattr(self, a) for a in attributes])
+    def _fitted_params(self) -> Dict:
+        """
+        Returns a dictionary of fitted model parameters.
+        Parameters default to None if they haven't been fitted yet.
+        """
+        return dict(
+            beta0=self.beta0,
+            beta1=self.beta1,
+            beta2=self.beta2,
+            beta3=self.beta3,
+            tau0=self.tau0,
+            tau1=self.tau1,
+        )
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegelSvensson":
         """
@@ -174,8 +205,10 @@ class NelsonSiegelSvensson(Interpolator):
         if self._check_fitted:
             assert self.tau0 is not None
             assert self.tau1 is not None
-            return self.formula(
-                X, self.beta0, self.beta1, self.beta2, self.beta3, self.tau0, self.tau1
-            )
+            assert self.beta0 is not None
+            assert self.beta1 is not None
+            assert self.beta2 is not None
+            assert self.beta3 is not None
+            return self.formula(X, **self._fitted_params)
         else:
             raise RuntimeError("Must call 'fit' first!")
