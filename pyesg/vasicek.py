@@ -1,5 +1,8 @@
 """Vasicek stochastic short-rate model"""
+from typing import Dict, Optional
 import numpy as np
+
+from scipy.optimize import minimize
 
 
 class Vasicek:
@@ -24,7 +27,7 @@ class Vasicek:
         return "Vasicek Model"
 
     @classmethod
-    def _log_likelihod(
+    def _log_likelihood(
         cls, k: float, theta: float, sigma: float, X: np.ndarray, y: np.ndarray
     ) -> float:
         """
