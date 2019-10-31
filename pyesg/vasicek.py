@@ -68,7 +68,7 @@ class Vasicek:
         """
         # minimize the negative log-likelihood
         f = lambda params, X, y: -1 * self._log_likelihood(X, y, *params)
-        mle = minimize(f, x0=[0.5, 0.1, 0.1], args=dict(X=X, y=y), method="Nelder-Mead")
+        mle = minimize(f, x0=[0.5, 0.1, 0.1], args=(X, y), method="Nelder-Mead")
         if mle.success:
             self.k, self.theta, self.sigma = mle.x
             return self
