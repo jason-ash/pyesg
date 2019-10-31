@@ -9,7 +9,7 @@ class Vasicek:
     """
     Vasicek stochastic short-rate model
 
-    r(t) = r(t) + k*(theta - r(t))*dt + sigma*dt**0.5*norm(0,1)
+    r(t+dt) = r(t) + k*(theta - r(t))*dt + sigma*dt**0.5*norm(0,1)
 
     Parameters
     ----------
