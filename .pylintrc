@@ -1,1 +1,6 @@
-disable=attribute-defined-outside-init, invalid-name
+[MESSAGES CONTROL]
+disable=
+    bad-continuation,
+    invalid-name,
+    protected-access,
+    too-many-arguments
