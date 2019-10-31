@@ -28,7 +28,7 @@ class Vasicek:
 
     @classmethod
     def _log_likelihood(
-        cls, k: float, theta: float, sigma: float, X: np.ndarray, y: np.ndarray
+        cls, X: np.ndarray, y: np.ndarray, k: float, theta: float, sigma: float
     ) -> float:
         """
         Log likelihood function, given model parameters and observed data
@@ -67,10 +67,9 @@ class Vasicek:
             e.g. array([2.190e-02, 2.160e-02, 2.110e-02]
         """
         # minimize the negative log-likelihood
-        f = lambda params, X, y: -1 * self._log_likelihood(*params, X=X, y=y)
-        mle = minimize(f, x0=[0.5, 0.1, 0.1], args=(X, y), method="Nelder-Mead")
+        f = lambda params, X, y: -1 * self._log_likelihood(X, y, *params)
+        mle = minimize(f, x0=[0.5, 0.1, 0.1], args=dict(X=X, y=y), method="Nelder-Mead")
         if mle.success:
             self.k, self.theta, self.sigma = mle.x
             return self
-        else:
-            raise RuntimeError("Model failed to converge")
+        raise RuntimeError("Model failed to converge")
