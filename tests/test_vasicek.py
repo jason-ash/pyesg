@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from pyesg import Vasicek
+from pyesg.datasets import load_ust_historical
 
 
 class TestVasicek(unittest.TestCase):
@@ -44,3 +45,18 @@ class TestVasicek(unittest.TestCase):
         self.assertEqual(vasicek.k, 3.1286885821300157)
         self.assertEqual(vasicek.theta, 0.9074884514128012)
         self.assertEqual(vasicek.sigma, 0.553151436210664)
+
+    def test_historical_fit(self):
+        """Test MLE fit on historical UST data from pyesg.datasets"""
+        data = load_ust_historical()
+        X = pd.to_datetime(
+            data.index.get_level_values("year").astype(str)
+            + "-"
+            + data.index.get_level_values("month").astype(str)
+        )
+        X = ((X - X[0]) / np.timedelta64(365, "D")).values
+        y = data.iloc[:, 0].values
+
+        model = Vasicek()
+        model.fit(X, y)
+        self.assertTrue(all(x > 0 for x in model._fitted_params.values()))

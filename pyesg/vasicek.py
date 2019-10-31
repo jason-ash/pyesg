@@ -61,7 +61,7 @@ class Vasicek:
 
         Parameters
         ----------
-        X : np.array of timesteps in years,
+        X : np.array of timesteps in years; must be increasing
             e.g. array([ 0.08333333,  0.16666667,  0.25]
         y : np.array of short-rates at each timestep
             e.g. array([2.190e-02, 2.160e-02, 2.110e-02]
