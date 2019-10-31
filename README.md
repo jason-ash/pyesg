@@ -1,4 +1,4 @@
-# pyESG
+# pyesg
 Economic Scenario Generator for Python.
 
 ## Objectives
@@ -81,3 +81,5 @@ nss = pyesg.NelsonSiegelSvensson()
 ns.fit(X, y)
 nss.fit(X, y)
 ```
+
+<img src="docs/images/NelsonSiegel.png" width="600">
