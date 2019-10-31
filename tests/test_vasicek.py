@@ -46,6 +46,7 @@ class TestVasicek(unittest.TestCase):
         self.assertEqual(vasicek.theta, 0.9074884514128012)
         self.assertEqual(vasicek.sigma, 0.553151436210664)
 
+    # pylint: disable=too-many-function-args
     def test_historical_fit(self):
         """Test MLE fit on historical UST data from pyesg.datasets"""
         data = load_ust_historical()

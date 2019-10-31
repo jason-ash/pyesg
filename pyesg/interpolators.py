@@ -6,12 +6,13 @@ import numpy as np
 from scipy.optimize import least_squares
 
 
+# pylint: disable=too-few-public-methods
 class Interpolator:
     """Base class for Interpolators"""
 
     @property
     def _fitted_params(self):
-        return NotImplementedError
+        return {}
 
     @property
     def _check_fitted(self) -> bool:
@@ -101,8 +102,7 @@ class NelsonSiegel(Interpolator):
             assert self.beta2 is not None
             assert self.tau is not None
             return self.formula(X, **self._fitted_params)
-        else:
-            raise RuntimeError("Must call 'fit' first!")
+        raise RuntimeError("Must call 'fit' first!")
 
 
 class NelsonSiegelSvensson(Interpolator):
@@ -210,5 +210,4 @@ class NelsonSiegelSvensson(Interpolator):
             assert self.beta2 is not None
             assert self.beta3 is not None
             return self.formula(X, **self._fitted_params)
-        else:
-            raise RuntimeError("Must call 'fit' first!")
+        raise RuntimeError("Must call 'fit' first!")
