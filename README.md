@@ -82,4 +82,4 @@ ns.fit(X, y)
 nss.fit(X, y)
 ```
 
-<img src="docs/images/NelsonSiegel.png" width="500">
+<img src="docs/images/NelsonSiegel.png" width="600">
