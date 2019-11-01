@@ -22,3 +22,19 @@ def load_ust_historical(**kwargs) -> pd.DataFrame:
                    84_month, 120_month, 240_month, 360_month
     """
     return _read_data("ust_historical.csv", header=0, index_col=[0, 1], **kwargs)
+
+
+def load_us_stocks(**kwargs) -> pd.DataFrame:
+    """
+    Returns a DataFrame with historical stock prices for AAPL, MSFT, and AMZN.
+
+    Stock prices are daily close value adjusted to include total returns.
+
+        Index : Date
+        Columns : aapl, msft, amzn
+
+    Data provided by yahoo finance: https://finance.yahoo.com
+    """
+    return _read_data(
+        "us_stocks.csv", header=0, index_col=[0], parse_dates=[0], **kwargs
+    )
