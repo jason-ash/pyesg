@@ -1,7 +1,7 @@
 """Test sampling algorithms"""
 import unittest
 
-from pyesg.models.samplers import recursive_sampler
+from pyesg.models import recursive_sampler
 
 
 class TestRecursiveSampler(unittest.TestCase):
