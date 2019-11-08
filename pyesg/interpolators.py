@@ -87,7 +87,6 @@ class NelsonSiegel(Interpolator):
         else:
             # keep tau fixed; solve for all betas
             def f(params, t, y):
-                assert self.tau is not None
                 return self.formula(t, *params, tau=self.tau) - y
 
             ls = least_squares(f, x0=[0.01, 0.01, 0.01], args=(X, y))
@@ -97,10 +96,6 @@ class NelsonSiegel(Interpolator):
     def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
         if self._check_fitted:
-            assert self.beta0 is not None
-            assert self.beta1 is not None
-            assert self.beta2 is not None
-            assert self.tau is not None
             return self.formula(X, **self._fitted_params)
         raise RuntimeError("Must call 'fit' first!")
 
@@ -192,8 +187,6 @@ class NelsonSiegelSvensson(Interpolator):
         else:
             # keep taus fixed; solve for all betas
             def f(params, t, y):
-                assert self.tau0 is not None
-                assert self.tau1 is not None
                 return self.formula(t, *params, tau0=self.tau0, tau1=self.tau1) - y
 
             ls = least_squares(f, x0=[0.01, 0.01, 0.01, 0.01], args=(X, y))
@@ -203,11 +196,5 @@ class NelsonSiegelSvensson(Interpolator):
     def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
         if self._check_fitted:
-            assert self.tau0 is not None
-            assert self.tau1 is not None
-            assert self.beta0 is not None
-            assert self.beta1 is not None
-            assert self.beta2 is not None
-            assert self.beta3 is not None
             return self.formula(X, **self._fitted_params)
         raise RuntimeError("Must call 'fit' first!")
