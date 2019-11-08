@@ -1,5 +1,5 @@
 """Algorithms for sampling from stochastic processes"""
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, Dict, Optional, Union
 
 import numpy as np
 from scipy.stats import norm
@@ -7,7 +7,7 @@ from scipy.stats import norm
 
 def recursive_sampler(
     process: Callable,
-    params: Tuple[float, ...],
+    params: Dict[str, float],
     n_scen: int,
     n_years: int,
     step_size: int,
@@ -22,7 +22,8 @@ def recursive_sampler(
     process : Callable, a function that calculates value(t+dt) from value(t) and a set
         of parameters. Must have arguments arranged by parameters first, then the start
         value, e.g. value(t)
-    params : Tuple[floats], the required parameters to evaluate the process
+    params : Dictionary[str, float], the required parameters to evaluate the process, as
+        "parameter_name": parameter_value; will be passed as **params to process.
     n_scen : int, the number of scenarios to generate
     n_years : int, the number of years per scenario
     step_size : int, the number of steps per year; e.g. 1 for annual time steps, 12 for
@@ -46,5 +47,5 @@ def recursive_sampler(
 
     # recursive calls operate on rows, but we can parallelize over scenarios
     for i in range(n_years * step_size):
-        out[:, i + 1] = process(*params, init=out[:, i], dW=out[:, i + 1])
+        out[:, i + 1] = process(**params, init=out[:, i], dW=out[:, i + 1])
     return out
