@@ -13,7 +13,7 @@ def recursive_sampler(
     step_size: int,
     init: Union[float, np.ndarray],
     random_state: Optional[int] = None,
-):
+) -> np.ndarray:
     """
     Returns an array of samples from a recursively-defined process.
 
