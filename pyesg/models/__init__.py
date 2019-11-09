@@ -4,8 +4,6 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 from scipy import stats
 
-# from pyesg.models.samplers import recursive_sampler
-
 
 class DiffusionProcess:
     """
@@ -31,7 +29,7 @@ class DiffusionProcess:
 
         Parameters
         ----------
-        x : float, the current, or starting value of the process
+        x : float, the starting value of the process
         dt : float, the amount of time to simulate between x and the next value
         dW : Union[float, np.ndarray], a float or array of normal random variates
 
