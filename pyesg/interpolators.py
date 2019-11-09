@@ -61,10 +61,6 @@ class NelsonSiegel(Interpolator):
 
     @property
     def _fitted_params(self) -> Dict:
-        """
-        Returns a dictionary of fitted model parameters.
-        Parameters default to None if they haven't been fitted yet.
-        """
         return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegel":
@@ -151,10 +147,6 @@ class NelsonSiegelSvensson(Interpolator):
 
     @property
     def _fitted_params(self) -> Dict:
-        """
-        Returns a dictionary of fitted model parameters.
-        Parameters default to None if they haven't been fitted yet.
-        """
         return dict(
             beta0=self.beta0,
             beta1=self.beta1,
