@@ -61,3 +61,17 @@ class TestVasicek(unittest.TestCase):
         model = Vasicek()
         model.fit(X, y)
         self.assertTrue(all(x > 0 for x in model._fitted_params.values()))
+
+    def test_sample_shape(self):
+        """Ensure the sample has the correct shape"""
+        model = Vasicek()
+        model.k, model.theta, model.sigma = 0.15, 0.045, 0.015
+        samples = model.sample(1000, 30, 12, 0.03)
+        self.assertEqual(samples.shape, (1000, 30 * 12 + 1))
+
+    def test_sample_first_value(self):
+        """Ensure the first scenario has the init value"""
+        model = Vasicek()
+        model.k, model.theta, model.sigma = 0.15, 0.045, 0.015
+        samples = model.sample(1000, 30, 12, 0.03)
+        self.assertListEqual(list(samples[:, 0]), [0.03] * 1000)
