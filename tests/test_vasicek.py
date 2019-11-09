@@ -61,3 +61,10 @@ class TestVasicek(unittest.TestCase):
         model = Vasicek()
         model.fit(X, y)
         self.assertTrue(all(x > 0 for x in model._fitted_params.values()))
+
+    def test_sample(self):
+        """Test sampling from a vasicek process with fixed params"""
+        model = Vasicek()
+        model.k, model.theta, model.sigma = 0.15, 0.045, 0.015
+        samples = model.sample(1000, 30, 12, 0.03)
+        self.assertEqual(samples.shape, (1000, 30 * 12 + 1))

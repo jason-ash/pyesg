@@ -1,11 +1,13 @@
 """Vasicek stochastic short-rate model"""
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 import numpy as np
 
 from scipy.optimize import minimize
 
+from pyesg.models import DiffusionProcess
 
-class Vasicek:
+
+class Vasicek(DiffusionProcess):
     """
     Vasicek stochastic short-rate model
 
@@ -23,8 +25,15 @@ class Vasicek:
         self.theta: Optional[float] = None  # fit parameter
         self.sigma: Optional[float] = None  # fit parameter
 
-    def __repr__(self) -> str:
-        return "Vasicek Model"
+    def __call__(
+        self, x: float, dt: float, dW: Optional[Union[float, np.ndarray]] = None
+    ) -> np.ndarray:
+        """Discrete approximation of the continuous Vasicek diffusion process"""
+        if dW is None:
+            dW = np.random.randn()
+        if self._check_fitted:
+            return self.k * (self.theta - x) * dt + self.sigma * dt ** 0.5 * dW
+        raise RuntimeError("Must call 'fit' first!")
 
     @classmethod
     def _log_likelihood(
@@ -49,11 +58,6 @@ class Vasicek:
         Parameters default to None if they haven't been fitted yet.
         """
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
-
-    @property
-    def _check_fitted(self) -> bool:
-        """Returns a boolean indicating whether or not the model has been fitted"""
-        return all(x is not None for x in self._fitted_params.values())
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "Vasicek":
         """
