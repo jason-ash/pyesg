@@ -10,11 +10,17 @@ from scipy.optimize import least_squares
 class Interpolator:
     """Base class for Interpolators"""
 
-    @property
-    def _fitted_params(self):
-        return {}
+    def __repr__(self) -> str:
+        return self.__class__.__name__
 
     @property
+    def _fitted_params(self) -> Dict[str, Optional[float]]:
+        """
+        Returns a dictionary of fitted model parameters.
+        Parameters should default to None if they haven't been fitted yet.
+        """
+        raise NotImplementedError()
+
     def _check_fitted(self) -> bool:
         """Returns a boolean indicating whether or not the model has been fitted"""
         return all(x is not None for x in self._fitted_params.values())
@@ -36,9 +42,6 @@ class NelsonSiegel(Interpolator):
         self.beta0: Optional[float] = None  # fit parameter
         self.beta1: Optional[float] = None  # fit parameter
         self.beta2: Optional[float] = None  # fit parameter
-
-    def __repr__(self):
-        return "Nelson-Siegel Interpolator"
 
     @classmethod
     def formula(
@@ -95,7 +98,7 @@ class NelsonSiegel(Interpolator):
 
     def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
-        if self._check_fitted:
+        if self._check_fitted():
             return self.formula(X, **self._fitted_params)
         raise RuntimeError("Must call 'fit' first!")
 
@@ -126,9 +129,6 @@ class NelsonSiegelSvensson(Interpolator):
         self.beta1: Optional[float] = None  # fit parameter
         self.beta2: Optional[float] = None  # fit parameter
         self.beta3: Optional[float] = None  # fit parameter
-
-    def __repr__(self):
-        return "Nelson-Siegel-Svensson Interpolator"
 
     @classmethod
     def formula(
@@ -195,6 +195,6 @@ class NelsonSiegelSvensson(Interpolator):
 
     def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
-        if self._check_fitted:
+        if self._check_fitted():
             return self.formula(X, **self._fitted_params)
         raise RuntimeError("Must call 'fit' first!")
