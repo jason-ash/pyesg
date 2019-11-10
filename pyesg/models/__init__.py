@@ -48,7 +48,6 @@ class DiffusionProcess:
         """
         raise NotImplementedError()
 
-    @property
     def _check_fitted(self) -> bool:
         """Returns a boolean indicating whether or not the model has been fitted"""
         return all(x is not None for x in self._fitted_params.values())
@@ -81,7 +80,7 @@ class DiffusionProcess:
         scenarios : np.ndarray with shape (n_scen, 1 + n_years*step_size), with the scenario
             results from the process
         """
-        if not self._check_fitted:
+        if not self._check_fitted():
             raise RuntimeError("Must call 'fit' first!")
 
         # create an array of random numbers we'll need to generate the scenarios

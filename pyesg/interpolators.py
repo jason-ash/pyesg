@@ -1,23 +1,38 @@
 """Estimator classes for interest rate curve interpolation"""
 from typing import Dict, Optional, Union
-
 import numpy as np
+from scipy import optimize
 
-from scipy.optimize import least_squares
 
-
-# pylint: disable=too-few-public-methods
 class Interpolator:
     """Base class for Interpolators"""
 
-    @property
-    def _fitted_params(self):
-        return {}
+    def __repr__(self) -> str:
+        return f"<pyesg.{self.__class__.__name__}>"
+
+    def __call__(
+        self, x: Union[float, np.ndarray], **params
+    ) -> Union[float, np.ndarray]:
+        """Returns the Interpolator estimate of a rate at maturity x"""
+        raise NotImplementedError()
 
     @property
+    def _fitted_params(self) -> Dict[str, Optional[float]]:
+        """
+        Returns a dictionary of fitted model parameters.
+        Parameters should default to None if they haven't been fitted yet.
+        """
+        raise NotImplementedError()
+
     def _check_fitted(self) -> bool:
         """Returns a boolean indicating whether or not the model has been fitted"""
         return all(x is not None for x in self._fitted_params.values())
+
+    def predict(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Returns the predicted values from an array of independent values"""
+        if self._check_fitted():
+            return self(x, **self._fitted_params)
+        raise RuntimeError("Must call 'fit' first!")
 
 
 class NelsonSiegel(Interpolator):
@@ -31,37 +46,25 @@ class NelsonSiegel(Interpolator):
     """
 
     def __init__(self, tau: Optional[float] = None) -> None:
-        self._fit_tau = tau is None
         self.tau = tau  # optionally fit parameter
+        self._fit_tau: bool = tau is None  # whether or not to fit tau as a parameter
         self.beta0: Optional[float] = None  # fit parameter
         self.beta1: Optional[float] = None  # fit parameter
         self.beta2: Optional[float] = None  # fit parameter
 
-    def __repr__(self):
-        return "Nelson-Siegel Interpolator"
-
-    @classmethod
-    def formula(
-        cls,
-        t: Union[float, np.ndarray],
-        beta0: float,
-        beta1: float,
-        beta2: float,
-        tau: float,
+    def __call__(
+        self, x: Union[float, np.ndarray], **params
     ) -> Union[float, np.ndarray]:
-        """Returns the Nelson-Siegel estimate of a rate at maturity t"""
-        return (
-            beta0
-            + beta1 * (1 - np.exp(-t * tau)) / (t * tau)
-            + beta2 * ((1 - np.exp(-t * tau)) / (t * tau) - np.exp(-t * tau))
-        )
+        """Returns the Nelson-Siegel interpolated value at a point, x"""
+        beta0 = params["beta0"]
+        beta1 = params["beta1"]
+        beta2 = params["beta2"]
+        tau = params["tau"]
+        factor = (1 - np.exp(-x * tau)) / (x * tau)
+        return beta0 + beta1 * factor + beta2 * (factor - np.exp(-x * tau))
 
     @property
     def _fitted_params(self) -> Dict:
-        """
-        Returns a dictionary of fitted model parameters.
-        Parameters default to None if they haven't been fitted yet.
-        """
         return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegel":
@@ -79,25 +82,19 @@ class NelsonSiegel(Interpolator):
         """
         if self._fit_tau:
             # solve for all betas and tau
-            def f(params, t, y):
-                return self.formula(t, *params) - y
+            def f(x0, x, y):
+                return self(x, beta0=x0[0], beta1=x0[1], beta2=x0[2], tau=x0[3]) - y
 
-            ls = least_squares(f, x0=[0.01, 0.01, 0.01, 1.0], args=(X, y))
+            ls = optimize.least_squares(f, x0=[0.01, 0.01, 0.01, 1.0], args=(X, y))
             self.beta0, self.beta1, self.beta2, self.tau = ls.x
         else:
             # keep tau fixed; solve for all betas
-            def f(params, t, y):
-                return self.formula(t, *params, tau=self.tau) - y
+            def f(x0, x, y):
+                return self(x, beta0=x0[0], beta1=x0[1], beta2=x0[2], tau=self.tau) - y
 
-            ls = least_squares(f, x0=[0.01, 0.01, 0.01], args=(X, y))
+            ls = optimize.least_squares(f, x0=[0.01, 0.01, 0.01], args=(X, y))
             self.beta0, self.beta1, self.beta2 = ls.x
         return self
-
-    def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-        """Returns the predicted values from an array of independent values"""
-        if self._check_fitted:
-            return self.formula(X, **self._fitted_params)
-        raise RuntimeError("Must call 'fit' first!")
 
 
 class NelsonSiegelSvensson(Interpolator):
@@ -119,42 +116,34 @@ class NelsonSiegelSvensson(Interpolator):
     def __init__(
         self, tau0: Optional[float] = None, tau1: Optional[float] = None
     ) -> None:
-        self._fit_tau = (tau0 is None) or (tau1 is None)
         self.tau0 = tau0  # optionally fit parameter
         self.tau1 = tau1  # optionally fit parameter
+        self._fit_tau = (tau0 is None) or (tau1 is None)
         self.beta0: Optional[float] = None  # fit parameter
         self.beta1: Optional[float] = None  # fit parameter
         self.beta2: Optional[float] = None  # fit parameter
         self.beta3: Optional[float] = None  # fit parameter
 
-    def __repr__(self):
-        return "Nelson-Siegel-Svensson Interpolator"
-
-    @classmethod
-    def formula(
-        cls,
-        t: Union[float, np.ndarray],
-        beta0: float,
-        beta1: float,
-        beta2: float,
-        beta3: float,
-        tau0: float,
-        tau1: float,
+    def __call__(
+        self, x: Union[float, np.ndarray], **params
     ) -> Union[float, np.ndarray]:
-        """Returns the Nelson-Siegel-Svensson estimate of a rate at maturity t"""
+        beta0 = params["beta0"]
+        beta1 = params["beta1"]
+        beta2 = params["beta2"]
+        beta3 = params["beta3"]
+        tau0 = params["tau0"]
+        tau1 = params["tau1"]
+        factor0 = (1 - np.exp(-x * tau0)) / (x * tau0)
+        factor1 = (1 - np.exp(-x * tau1)) / (x * tau1)
         return (
             beta0
-            + beta1 * (1 - np.exp(-t * tau0)) / (t * tau0)
-            + beta2 * ((1 - np.exp(-t * tau0)) / (t * tau0) - np.exp(-t * tau0))
-            + beta3 * ((1 - np.exp(-t * tau1)) / (t * tau1) - np.exp(-t * tau1))
+            + beta1 * factor0
+            + beta2 * (factor0 - np.exp(-x * tau0))
+            + beta3 * (factor1 - np.exp(-x * tau1))
         )
 
     @property
     def _fitted_params(self) -> Dict:
-        """
-        Returns a dictionary of fitted model parameters.
-        Parameters default to None if they haven't been fitted yet.
-        """
         return dict(
             beta0=self.beta0,
             beta1=self.beta1,
@@ -179,22 +168,40 @@ class NelsonSiegelSvensson(Interpolator):
         """
         if self._fit_tau:
             # solve for all betas and taus
-            def f(params, t, y):
-                return self.formula(t, *params) - y
+            def f(x0, x, y):
+                return (
+                    self(
+                        x,
+                        beta0=x0[0],
+                        beta1=x0[1],
+                        beta2=x0[2],
+                        beta3=x0[3],
+                        tau0=x0[4],
+                        tau1=x0[5],
+                    )
+                    - y
+                )
 
-            ls = least_squares(f, x0=[0.01, 0.01, 0.01, 0.01, 1.0, 1.0], args=(X, y))
+            ls = optimize.least_squares(
+                f, x0=[0.1, 0.1, 0.1, 0.1, 1.0, 1.0], args=(X, y)
+            )
             self.beta0, self.beta1, self.beta2, self.beta3, self.tau0, self.tau1 = ls.x
         else:
             # keep taus fixed; solve for all betas
-            def f(params, t, y):
-                return self.formula(t, *params, tau0=self.tau0, tau1=self.tau1) - y
+            def f(x0, x, y):
+                return (
+                    self(
+                        x,
+                        beta0=x0[0],
+                        beta1=x0[1],
+                        beta2=x0[2],
+                        beta3=x0[3],
+                        tau0=self.tau0,
+                        tau1=self.tau1,
+                    )
+                    - y
+                )
 
-            ls = least_squares(f, x0=[0.01, 0.01, 0.01, 0.01], args=(X, y))
+            ls = optimize.least_squares(f, x0=[0.01, 0.01, 0.01, 0.01], args=(X, y))
             self.beta0, self.beta1, self.beta2, self.beta3 = ls.x
         return self
-
-    def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-        """Returns the predicted values from an array of independent values"""
-        if self._check_fitted:
-            return self.formula(X, **self._fitted_params)
-        raise RuntimeError("Must call 'fit' first!")

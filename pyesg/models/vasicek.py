@@ -31,7 +31,7 @@ class Vasicek(DiffusionProcess):
         """Discrete approximation of the continuous Vasicek diffusion process"""
         if dW is None:
             dW = np.random.randn()
-        if self._check_fitted:
+        if self._check_fitted():
             return self.k * (self.theta - x) * dt + self.sigma * dt ** 0.5 * dW
         raise RuntimeError("Must call 'fit' first!")
 
