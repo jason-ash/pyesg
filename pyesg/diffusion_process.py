@@ -1,10 +1,9 @@
 """Classes for stochastic diffusion process"""
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Tuple, Union
 import numpy as np
 from scipy import stats
 
 
-# pylint: disable=too-few-public-methods
 class DiffusionProcess:
     """
     Base class for a stochastic diffusion process.
@@ -21,7 +20,7 @@ class DiffusionProcess:
         self,
         value: Union[float, np.ndarray],
         dt: float,
-        random_state: Optional[int] = None,
+        random_state: Optional[Union[int, np.random.RandomState]] = None,
     ) -> np.ndarray:
         """
         Simulates the next value or array of values from the process,
@@ -32,7 +31,8 @@ class DiffusionProcess:
         ----------
         value : Union[float, np.ndarray], the starting value or array
         dt : float, the discrete time elapsed between value(t) and value(t+dt)
-        random_seed : Optional[int], if reproducibility is desired
+        random_state : Optional[int, np.random.RandomState], either an integer seed or a
+            numpy RandomState object directly, if reproducibility is desired
 
         Returns
         -------
@@ -48,6 +48,17 @@ class DiffusionProcess:
         """
         return stats.norm.rvs
 
+    def _dW(
+        self,
+        size: Tuple[int, ...],
+        random_state: Optional[Union[int, np.random.RandomState]] = None,
+    ) -> np.ndarray:
+        """
+        Returns a batch of random values for the process, given a size and optional
+        random_state integer or object
+        """
+        return self._stochastic_dist(size=size, random_state=random_state)
+
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
         """Returns a dictionary of parameters required for this process"""
@@ -56,6 +67,62 @@ class DiffusionProcess:
     def _is_fit(self) -> bool:
         """Returns a boolean indicating whether or not the process has been fit"""
         return all([v is not None for v in self._coefs.values()])
+
+    def sample(
+        self,
+        init: Union[float, np.ndarray],
+        n_scen: int,
+        n_year: int,
+        n_step: int,
+        random_state: Optional[Union[int, np.random.RandomState]] = None,
+    ) -> np.ndarray:
+        """
+        Sample from the diffusion process for a number of scenarios and time steps.
+
+        Parameters
+        ----------
+        init : Union[float, np.ndarray], either a single start value that will be
+            broadcast to all scenarios, or a start value array that should match the
+            shape of "n_scen"
+        n_scen : int, the number of scenarios to generate
+        n_year : int, the number of years per scenario
+        n_step : int, the number of steps per year; e.g. 1 for annual time steps, 12
+            for monthly, 24 for bi-weekly, 52 for weekly, 252 (or 365) for daily
+        random_state : Optional[int, np.random.RandomState], either an integer seed or a
+            numpy RandomState object directly, if reproducibility is desired
+
+        Returns
+        -------
+        samples : np.ndarray with shape (n_scen, 1 + n_years*step_size), with the scenario
+            results from the process
+        """
+        if not self._is_fit():
+            raise RuntimeError("Model parameters haven't been fit yet!")
+
+        # set a function-level pseudo random number generator, either by creating a new
+        # RandomState object with the integer argument, or using the RandomState object
+        # directly passed in the arguments.
+        if isinstance(random_state, int):
+            prng = np.random.RandomState(random_state)
+        else:
+            prng = random_state
+
+        # create a shell array that we will populate with values once they are available
+        samples = np.empty(shape=(n_scen, 1 + n_year * n_step))
+
+        # overwrite first value of each scenario (the first column) with the init value
+        # confirm that if init is passed as an array that it matches the n_scen shape
+        try:
+            samples[:, 0] = init
+        except ValueError as e:
+            raise ValueError("'init' should have the same length as 'n_scen'") from e
+
+        # generate the next value recursively, but vectorized across scenarios (columns)
+        for i in range(n_year * n_step):
+            samples[:, i + 1] = self(
+                value=samples[:, i], dt=1 / n_step, random_state=prng
+            )
+        return samples
 
 
 class Vasicek(DiffusionProcess):
@@ -71,9 +138,13 @@ class Vasicek(DiffusionProcess):
         self,
         value: Union[float, np.ndarray],
         dt: float,
-        random_state: Optional[int] = None,
+        random_state: Optional[Union[int, np.random.RandomState]] = None,
     ) -> np.ndarray:
-        pass
+        if isinstance(value, float):
+            # convert to a one-element array
+            value = np.array(value)
+        dW = self._dW(size=value.shape, random_state=random_state)
+        return self.k * (self.theta - value) * dt + self.sigma * dt ** 0.05 * dW
 
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
