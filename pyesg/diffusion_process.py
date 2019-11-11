@@ -1,10 +1,18 @@
 """Classes for stochastic diffusion process"""
 from typing import Dict, Optional, Union
 import numpy as np
+from scipy import stats
+
 
 # pylint: disable=too-few-public-methods
 class DiffusionProcess:
-    """Base class for a stochastic diffusion process implemented with discrete time steps"""
+    """
+    Base class for a stochastic diffusion process.
+
+    Provides the framework for implementing specific stochastic models as subclasses,
+    including a __call__ method that describes how to generate new samples from the
+    process, given a start value and a delta-t.
+    """
 
     def __call__(
         self,
@@ -28,6 +36,14 @@ class DiffusionProcess:
         samples : np.ndarray, the next values in the process
         """
         raise NotImplementedError()
+
+    @property
+    def _stochastic_dist(self):
+        """
+        Returns a scipy distribution rvs method that can be used to generate stochastic
+        samples for new values in the diffusion process. Default is standard normal.
+        """
+        return stats.norm.rvs
 
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
