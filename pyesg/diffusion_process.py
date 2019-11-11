@@ -144,7 +144,7 @@ class Vasicek(DiffusionProcess):
             # convert to a one-element array
             value = np.array(value)
         dW = self._dW(size=value.shape, random_state=random_state)
-        return self.k * (self.theta - value) * dt + self.sigma * dt ** 0.5 * dW
+        return value + self.k * (self.theta - value) * dt + self.sigma * dt ** 0.5 * dW
 
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
@@ -171,7 +171,8 @@ class CoxIngersollRoss(DiffusionProcess):
             value = np.array(value)
         dW = self._dW(size=value.shape, random_state=random_state)
         return (
-            self.k * (self.theta - value) * dt
+            value
+            + self.k * (self.theta - value) * dt
             + self.sigma * value ** 0.5 * dt ** 0.5 * dW
         )
 
