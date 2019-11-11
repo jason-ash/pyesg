@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name="pyesg",
     version="0.1.1",
-    description="Economic Scenario Generator in Python",
+    description="Economic Scenario Generator for Python",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/jason-ash/pyesg",
