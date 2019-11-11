@@ -23,7 +23,7 @@ pip install pyesg
 ```
 
 ## License
-Open Source and licensed under MIT, Copyright (c) 2019 Jason Ash
+Open Source and licensed under MIT, Copyright &copy; 2019 Jason Ash
 
 ## Examples
 
