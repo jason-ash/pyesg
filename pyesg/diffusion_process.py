@@ -179,3 +179,29 @@ class CoxIngersollRoss(DiffusionProcess):
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
+
+
+class GeometricBrownianMotion(DiffusionProcess):
+    """Geometric Brownian Motion process"""
+
+    def __init__(self) -> None:
+        self.mu: Optional[float] = None
+        self.sigma: Optional[float] = None
+
+    def __call__(
+        self,
+        value: Union[float, np.ndarray],
+        dt: float,
+        random_state: Optional[Union[int, np.random.RandomState]] = None,
+    ) -> np.ndarray:
+        if isinstance(value, float):
+            # convert to a one-element array
+            value = np.array(value)
+        dW = self._dW(size=value.shape, random_state=random_state)
+        return value * np.exp(
+            (self.mu - self.sigma * self.sigma / 2) * dt + self.sigma * dt ** 0.5 * dW
+        )
+
+    @property
+    def _coefs(self) -> Dict[str, Optional[float]]:
+        return dict(mu=self.mu, sigma=self.sigma)
