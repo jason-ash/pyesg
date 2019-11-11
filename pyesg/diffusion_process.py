@@ -155,6 +155,7 @@ class CoxIngersollRoss(DiffusionProcess):
     """Cox-Ingersoll-Ross short-rate model"""
 
     def __init__(self) -> None:
+        super().__init__()
         self.k: Optional[float] = None
         self.theta: Optional[float] = None
         self.sigma: Optional[float] = None
@@ -177,9 +178,3 @@ class CoxIngersollRoss(DiffusionProcess):
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
-
-
-if __name__ == "__main__":
-    V = Vasicek()
-    V.k, V.theta, V.sigma = 0.15, 0.045, 0.015
-    print(V._is_fit())
