@@ -14,6 +14,9 @@ class DiffusionProcess:
     process, given a start value and a delta-t.
     """
 
+    def __repr__(self) -> str:
+        return f"<pyesg.{self.__class__.__name__}>"
+
     def __call__(
         self,
         value: Union[float, np.ndarray],
@@ -59,6 +62,7 @@ class Vasicek(DiffusionProcess):
     """Implements the Vasicek short-rate model"""
 
     def __init__(self) -> None:
+        super().__init__()
         self.k: Optional[float] = None
         self.theta: Optional[float] = None
         self.sigma: Optional[float] = None
