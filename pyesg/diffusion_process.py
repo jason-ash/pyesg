@@ -126,7 +126,7 @@ class DiffusionProcess:
 
 
 class Vasicek(DiffusionProcess):
-    """Implements the Vasicek short-rate model"""
+    """Vasicek short-rate model"""
 
     def __init__(self) -> None:
         super().__init__()
@@ -145,6 +145,34 @@ class Vasicek(DiffusionProcess):
             value = np.array(value)
         dW = self._dW(size=value.shape, random_state=random_state)
         return self.k * (self.theta - value) * dt + self.sigma * dt ** 0.5 * dW
+
+    @property
+    def _coefs(self) -> Dict[str, Optional[float]]:
+        return dict(k=self.k, theta=self.theta, sigma=self.sigma)
+
+
+class CoxIngersollRoss(DiffusionProcess):
+    """Cox-Ingersoll-Ross short-rate model"""
+
+    def __init__(self) -> None:
+        self.k: Optional[float] = None
+        self.theta: Optional[float] = None
+        self.sigma: Optional[float] = None
+
+    def __call__(
+        self,
+        value: Union[float, np.ndarray],
+        dt: float,
+        random_state: Optional[Union[int, np.random.RandomState]] = None,
+    ) -> np.ndarray:
+        if isinstance(value, float):
+            # convert to a one-element array
+            value = np.array(value)
+        dW = self._dW(size=value.shape, random_state=random_state)
+        return (
+            self.k * (self.theta - value) * dt
+            + self.sigma * value ** 0.5 * dt ** 0.5 * dW
+        )
 
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
