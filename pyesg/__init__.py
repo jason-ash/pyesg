@@ -1,3 +1,3 @@
 """Top level imports"""
 from .interpolators import NelsonSiegel, NelsonSiegelSvensson
-from .models.vasicek import Vasicek
+from .diffusion_process import CoxIngersollRoss, GeometricBrownianMotion, Vasicek
