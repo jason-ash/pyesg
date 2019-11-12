@@ -24,7 +24,7 @@ class DiffusionProcess:
         self.correlation: Optional[np.ndarray] = None
 
     def __repr__(self) -> str:
-        return f"<pyesg.{self.__class__.__name__}>"
+        return f"<pyesg.{self.__class__.__name__}{self._coefs}>"
 
     def __call__(
         self,
