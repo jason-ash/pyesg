@@ -220,7 +220,7 @@ class GeometricBrownianMotion(DiffusionProcess):
     """Geometric Brownian Motion process"""
 
     def __init__(self, n_indices: int = 1) -> None:
-        super().__init__(n_indices=1)
+        super().__init__(n_indices=n_indices)
         self.mu: Optional[float] = None
         self.sigma: Optional[float] = None
 
@@ -240,7 +240,10 @@ class GeometricBrownianMotion(DiffusionProcess):
 
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
-        return dict(mu=self.mu, sigma=self.sigma)
+        _coefs = dict(mu=self.mu, sigma=self.sigma)
+        if self.n_indices > 1:
+            _coefs["correlation"] = self.correlation
+        return _coefs
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         raise NotImplementedError()
