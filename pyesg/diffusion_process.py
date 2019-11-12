@@ -170,7 +170,9 @@ class DiffusionProcess:
             )
 
         # squeeze the final dimension of the array to simplify if n_indices == 1
-        return samples.squeeze()
+        if self.n_indices == 1:
+            samples = samples.squeeze(axis=2)
+        return samples
 
 
 class Vasicek(DiffusionProcess):

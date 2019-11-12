@@ -1,5 +1,7 @@
 """Tests for the Vasicek Model"""
 import unittest
+from hypothesis import given, settings
+from hypothesis.strategies import integers
 import numpy as np
 
 from pyesg import CoxIngersollRoss, GeometricBrownianMotion, Vasicek
@@ -7,6 +9,15 @@ from pyesg import CoxIngersollRoss, GeometricBrownianMotion, Vasicek
 
 class TestVasicek(unittest.TestCase):
     """Test Vasicek Model"""
+
+    @settings(deadline=None)
+    @given(integers(1, 1000), integers(1, 30), integers(1, 365))
+    def test_sample_shapes(self, n_scen, n_year, n_step):
+        """Ensure samples have the correct shape"""
+        model = Vasicek()
+        model.k, model.theta, model.sigma = 0.15, 0.045, 0.015
+        samples = model.sample(0.03, n_scen, n_year, n_step, random_state=None)
+        self.assertEqual(samples.shape, (n_scen, 1 + n_year * n_step))
 
     def test_sample_shape(self):
         """Ensure the sample has the correct shape"""
