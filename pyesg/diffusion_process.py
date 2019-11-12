@@ -3,7 +3,7 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 from scipy import stats
 
-from .utils import _random_state_object
+from .utils import check_random_state
 
 
 class DiffusionProcess:
@@ -149,7 +149,7 @@ class DiffusionProcess:
         # set a function-level pseudo random number generator, either by creating a new
         # RandomState object with the integer argument, or using the RandomState object
         # directly passed in the arguments.
-        prng = _random_state_object(random_state)
+        prng = check_random_state(random_state)
 
         # create a shell array that we will populate with values once they are available
         samples = np.empty(shape=(n_scen, 1 + n_year * n_step, self.n_indices))

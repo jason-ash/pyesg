@@ -12,17 +12,17 @@ def _has_valid_cholesky(matrix: np.ndarray) -> bool:
         return False
 
 
-def _random_state_object(
-    value: Union[int, np.random.RandomState, None]
+def check_random_state(
+    seed: Union[int, np.random.RandomState, None]
 ) -> np.random.RandomState:
     """
     Returns a numpy RandomState object from any of an integer, a RandomState object, or
     a None value (randomly instantiated RandomState object)
     """
-    if value is None:
+    if seed is None:
         return np.random.RandomState()
-    if isinstance(value, int):
-        return np.random.RandomState(value)
-    if isinstance(value, np.random.RandomState):
-        return value
+    if isinstance(seed, int):
+        return np.random.RandomState(seed)
+    if isinstance(seed, np.random.RandomState):
+        return seed
     raise ValueError("Invalid argument type to convert to a RandomState object")
