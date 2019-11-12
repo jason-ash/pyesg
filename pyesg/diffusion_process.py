@@ -89,6 +89,10 @@ class DiffusionProcess:
         """Returns a boolean indicating whether or not the process has been fit"""
         return all([v is not None for v in self._coefs.values()])
 
+    def _validate_coefs(self) -> None:
+        """Validates shape, type, and ranges of coefficients for the process"""
+        raise NotImplementedError()
+
     def fit(self, X: np.ndarray, y: np.ndarray):
         """
         Fits the parameters of the diffusion process based on historical data.
@@ -194,8 +198,11 @@ class Vasicek(DiffusionProcess):
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
 
+    def _validate_coefs(self) -> None:
+        raise NotImplementedError("TODO - not implemented yet.")
+
     def fit(self, X: np.ndarray, y: np.ndarray):
-        raise NotImplementedError()
+        raise NotImplementedError("TODO - not implemented yet.")
 
 
 class CoxIngersollRoss(DiffusionProcess):
@@ -227,8 +234,11 @@ class CoxIngersollRoss(DiffusionProcess):
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
 
+    def _validate_coefs(self) -> None:
+        raise NotImplementedError("TODO - not implemented yet.")
+
     def fit(self, X: np.ndarray, y: np.ndarray):
-        raise NotImplementedError()
+        raise NotImplementedError("TODO - not implemented yet.")
 
 
 class GeometricBrownianMotion(DiffusionProcess):
@@ -260,5 +270,8 @@ class GeometricBrownianMotion(DiffusionProcess):
             _coefs["correlation"] = self.correlation
         return _coefs
 
+    def _validate_coefs(self) -> None:
+        raise NotImplementedError("TODO - not implemented yet.")
+
     def fit(self, X: np.ndarray, y: np.ndarray):
-        raise NotImplementedError()
+        raise NotImplementedError("TODO - not implemented yet.")
