@@ -11,7 +11,17 @@ class DiffusionProcess:
     Provides the framework for implementing specific stochastic models as subclasses,
     including a __call__ method that describes how to generate new samples from the
     process, given a start value and a delta-t.
+
+    Parameters
+    ----------
+    n_indices : int, default 1, the number of indices to model. >1 is appropriate for
+        some equity models, where we may wish to model correlated assets. Often would
+        be set to 1 for short-rate interest models.
     """
+
+    def __init__(self, n_indices: int = 1) -> None:
+        self.n_indices = n_indices
+        self.correlation: Optional[np.ndarray] = None
 
     def __repr__(self) -> str:
         return f"<pyesg.{self.__class__.__name__}>"
@@ -148,7 +158,7 @@ class Vasicek(DiffusionProcess):
     """Vasicek short-rate model"""
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(n_indices=1)
         self.k: Optional[float] = None
         self.theta: Optional[float] = None
         self.sigma: Optional[float] = None
@@ -177,7 +187,7 @@ class CoxIngersollRoss(DiffusionProcess):
     """Cox-Ingersoll-Ross short-rate model"""
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(n_indices=1)
         self.k: Optional[float] = None
         self.theta: Optional[float] = None
         self.sigma: Optional[float] = None
@@ -209,7 +219,8 @@ class CoxIngersollRoss(DiffusionProcess):
 class GeometricBrownianMotion(DiffusionProcess):
     """Geometric Brownian Motion process"""
 
-    def __init__(self) -> None:
+    def __init__(self, n_indices: int = 1) -> None:
+        super().__init__(n_indices=1)
         self.mu: Optional[float] = None
         self.sigma: Optional[float] = None
 
