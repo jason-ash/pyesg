@@ -11,10 +11,21 @@ class DiffusionProcess:
     Provides the framework for implementing specific stochastic models as subclasses,
     including a __call__ method that describes how to generate new samples from the
     process, given a start value and a delta-t.
+
+    Parameters
+    ----------
+    n_indices : int, default 1, the number of indices to model. >1 is appropriate for
+        some equity models, where we may wish to model correlated assets. Often would
+        be set to 1 for short-rate interest models.
     """
 
+    def __init__(self, n_indices: int = 1) -> None:
+        self.n_indices = n_indices
+        if n_indices > 1:
+            self.correlation: Optional[np.ndarray] = None
+
     def __repr__(self) -> str:
-        return f"<pyesg.{self.__class__.__name__}>"
+        return f"<pyesg.{self.__class__.__name__}{self._coefs}>"
 
     def __call__(
         self,
@@ -41,6 +52,11 @@ class DiffusionProcess:
         raise NotImplementedError()
 
     @property
+    def _coefs(self) -> Dict[str, Optional[float]]:
+        """Returns a dictionary of parameters required for this process"""
+        raise NotImplementedError()
+
+    @property
     def _stochastic_dist(self):
         """
         Returns a scipy distribution rvs method that can be used to generate stochastic
@@ -55,18 +71,46 @@ class DiffusionProcess:
     ) -> np.ndarray:
         """
         Returns a batch of random values for the process, given a size and optional
-        random_state integer or object
+        random_state integer or object. If multiple indices are desired, then the
+        correlation matrix is transformed using np.linalg.cholesky, then multiplied by
+        the random variates to generate correlated draws.
         """
-        return self._stochastic_dist(size=size, random_state=random_state)
+        rv = self._stochastic_dist(size=size, random_state=random_state)
 
-    @property
-    def _coefs(self) -> Dict[str, Optional[float]]:
-        """Returns a dictionary of parameters required for this process"""
-        raise NotImplementedError()
+        try:
+            if hasattr(self, "correlation"):
+                cholesky = np.linalg.cholesky(self.correlation)
+                rv = rv @ cholesky.T
+        except np.linalg.LinAlgError as e:
+            raise np.linalg.LinAlgError("Correlation matrix is not valid") from e
+        return rv
 
     def _is_fit(self) -> bool:
         """Returns a boolean indicating whether or not the process has been fit"""
         return all([v is not None for v in self._coefs.values()])
+
+    def _validate_coefs(self) -> None:
+        """Validates shape, type, and ranges of coefficients for the process"""
+        raise NotImplementedError()
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        """
+        Fits the parameters of the diffusion process based on historical data.
+
+        The exact method of fitting should be defined at the subclass level, because the
+        implementation can vary depending on the model.
+
+        Parameters
+        ----------
+        X : np.ndarray, the indices of times/dates of the observed prices
+        y : np.ndarray, the observed prices or values on the given dates. If multiple
+            indices, then y will be a matrix, where the columns are the indices.
+
+        Returns
+        -------
+        self
+        """
+        raise NotImplementedError()
 
     def sample(
         self,
@@ -93,8 +137,9 @@ class DiffusionProcess:
 
         Returns
         -------
-        samples : np.ndarray with shape (n_scen, 1 + n_years*step_size), with the scenario
-            results from the process
+        samples : np.ndarray, with the scenario results from the process
+            if n_indices > 1, then shape = (n_scen, 1 + n_years * n_step, n_indices)
+            otherwise, shape = (n_scen, 1 + n_years * n_step)
         """
         if not self._is_fit():
             raise RuntimeError("Model parameters haven't been fit yet!")
@@ -108,28 +153,31 @@ class DiffusionProcess:
             prng = random_state
 
         # create a shell array that we will populate with values once they are available
-        samples = np.empty(shape=(n_scen, 1 + n_year * n_step))
+        samples = np.empty(shape=(n_scen, 1 + n_year * n_step, self.n_indices))
 
         # overwrite first value of each scenario (the first column) with the init value
         # confirm that if init is passed as an array that it matches the n_scen shape
         try:
-            samples[:, 0] = init
+            samples[:, 0, :] = init
         except ValueError as e:
             raise ValueError("'init' should have the same length as 'n_scen'") from e
 
         # generate the next value recursively, but vectorized across scenarios (columns)
+        # also vectorized across indices, if applicable
         for i in range(n_year * n_step):
-            samples[:, i + 1] = self(
-                value=samples[:, i], dt=1 / n_step, random_state=prng
+            samples[:, i + 1, :] = self(
+                value=samples[:, i, :], dt=1 / n_step, random_state=prng
             )
-        return samples
+
+        # squeeze the final dimension of the array to simplify if n_indices == 1
+        return samples.squeeze()
 
 
 class Vasicek(DiffusionProcess):
     """Vasicek short-rate model"""
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(n_indices=1)
         self.k: Optional[float] = None
         self.theta: Optional[float] = None
         self.sigma: Optional[float] = None
@@ -150,12 +198,18 @@ class Vasicek(DiffusionProcess):
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
 
+    def _validate_coefs(self) -> None:
+        raise NotImplementedError("TODO - not implemented yet.")
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        raise NotImplementedError("TODO - not implemented yet.")
+
 
 class CoxIngersollRoss(DiffusionProcess):
     """Cox-Ingersoll-Ross short-rate model"""
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(n_indices=1)
         self.k: Optional[float] = None
         self.theta: Optional[float] = None
         self.sigma: Optional[float] = None
@@ -180,11 +234,18 @@ class CoxIngersollRoss(DiffusionProcess):
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
 
+    def _validate_coefs(self) -> None:
+        raise NotImplementedError("TODO - not implemented yet.")
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        raise NotImplementedError("TODO - not implemented yet.")
+
 
 class GeometricBrownianMotion(DiffusionProcess):
     """Geometric Brownian Motion process"""
 
-    def __init__(self) -> None:
+    def __init__(self, n_indices: int = 1) -> None:
+        super().__init__(n_indices=n_indices)
         self.mu: Optional[float] = None
         self.sigma: Optional[float] = None
 
@@ -204,4 +265,13 @@ class GeometricBrownianMotion(DiffusionProcess):
 
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
-        return dict(mu=self.mu, sigma=self.sigma)
+        _coefs = dict(mu=self.mu, sigma=self.sigma)
+        if self.n_indices > 1:
+            _coefs["correlation"] = self.correlation
+        return _coefs
+
+    def _validate_coefs(self) -> None:
+        raise NotImplementedError("TODO - not implemented yet.")
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        raise NotImplementedError("TODO - not implemented yet.")
