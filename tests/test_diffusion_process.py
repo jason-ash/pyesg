@@ -1,7 +1,7 @@
 """Tests for the Vasicek Model"""
 import unittest
 from hypothesis import given, settings
-from hypothesis.strategies import integers
+from hypothesis.strategies import floats, integers
 import numpy as np
 
 from pyesg import CoxIngersollRoss, GeometricBrownianMotion, Vasicek
@@ -19,21 +19,21 @@ class TestVasicek(unittest.TestCase):
         samples = model.sample(0.03, n_scen, n_year, n_step, random_state=None)
         self.assertEqual(samples.shape, (n_scen, 1 + n_year * n_step))
 
-    def test_sample_first_value1(self):
-        """Ensure the first scenario has the init value if init is a float"""
+    @given(init=floats(0, allow_infinity=False))
+    def test_sample_init_value1(self, init):
+        """Ensure the init value is used as the scenario start value"""
         model = Vasicek()
         model.k, model.theta, model.sigma = 0.15, 0.045, 0.015
-        init = 0.03
-        samples = model.sample(init, 1000, 30, 12, random_state=None)
-        self.assertListEqual(list(samples[:, 0]), [0.03] * 1000)
+        samples = model.sample(init, 10, 10, 1, random_state=None)
+        self.assertListEqual(list(samples[:, 0]), [init] * 10)
 
-    def test_sample_first_value2(self):
-        """Ensure the first scenario has the init value if init is an array"""
+    @given(init=floats(0, allow_infinity=False))
+    def test_sample_init_value2(self, init):
+        """Ensure the init value is used as the scenario start value"""
         model = Vasicek()
         model.k, model.theta, model.sigma = 0.15, 0.045, 0.015
-        init = np.array([0.03])
-        samples = model.sample(init, 1000, 30, 12, random_state=None)
-        self.assertListEqual(list(samples[:, 0]), [0.03] * 1000)
+        samples = model.sample(np.full(10, init), 10, 10, 1, random_state=None)
+        self.assertListEqual(list(samples[:, 0]), [init] * 10)
 
     def test_raises_value_error(self):
         """Ensure we raise a ValueError if init shape doesn't match n_scen"""
@@ -55,21 +55,21 @@ class TestCoxIngersollRoss(unittest.TestCase):
         samples = model.sample(0.03, n_scen, n_year, n_step, random_state=None)
         self.assertEqual(samples.shape, (n_scen, 1 + n_year * n_step))
 
-    def test_sample_first_value1(self):
-        """Ensure the first scenario has the init value if init is a float"""
+    @given(init=floats(0, allow_infinity=False))
+    def test_sample_init_value1(self, init):
+        """Ensure the init value is used as the scenario start value"""
         model = CoxIngersollRoss()
         model.k, model.theta, model.sigma = 0.10, 0.045, 0.015
-        init = 0.03
-        samples = model.sample(init, 1000, 30, 12, random_state=None)
-        self.assertListEqual(list(samples[:, 0]), [0.03] * 1000)
+        samples = model.sample(init, 10, 10, 1, random_state=None)
+        self.assertListEqual(list(samples[:, 0]), [init] * 10)
 
-    def test_sample_first_value2(self):
-        """Ensure the first scenario has the init value if init is an array"""
+    @given(init=floats(0, allow_infinity=False))
+    def test_sample_init_value2(self, init):
+        """Ensure the init value is used as the scenario start value"""
         model = CoxIngersollRoss()
         model.k, model.theta, model.sigma = 0.10, 0.045, 0.015
-        init = np.array([0.03])
-        samples = model.sample(init, 1000, 30, 12, random_state=None)
-        self.assertListEqual(list(samples[:, 0]), [0.03] * 1000)
+        samples = model.sample(np.full(10, init), 10, 10, 1, random_state=None)
+        self.assertListEqual(list(samples[:, 0]), [init] * 10)
 
     def test_raises_value_error(self):
         """Ensure we raise a ValueError if init shape doesn't match n_scen"""
