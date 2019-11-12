@@ -4,6 +4,7 @@ dist/
 *.egg-info/
 
 *.mypy_cache
+*.hypothesis
 
 *.ipynb
 *.ipynb_checkpoints

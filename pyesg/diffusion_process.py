@@ -158,6 +158,10 @@ class DiffusionProcess:
         # overwrite first value of each scenario (the first column) with the init value
         # confirm that if init is passed as an array that it matches the n_scen shape
         try:
+            if isinstance(init, np.ndarray):
+                # if init is passed as a single array, then add a dummy index at the end
+                if init.ndim < 2:
+                    init = init[:, None]
             samples[:, 0, :] = init
         except ValueError as e:
             raise ValueError("'init' should have the same length as 'n_scen'") from e
@@ -170,7 +174,9 @@ class DiffusionProcess:
             )
 
         # squeeze the final dimension of the array to simplify if n_indices == 1
-        return samples.squeeze()
+        if self.n_indices == 1:
+            samples = samples.squeeze(axis=2)
+        return samples
 
 
 class Vasicek(DiffusionProcess):
