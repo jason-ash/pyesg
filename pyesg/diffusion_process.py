@@ -68,6 +68,25 @@ class DiffusionProcess:
         """Returns a boolean indicating whether or not the process has been fit"""
         return all([v is not None for v in self._coefs.values()])
 
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        """
+        Fits the parameters of the diffusion process based on historical data.
+
+        The exact method of fitting should be defined at the subclass level, because the
+        implementation can vary depending on the model.
+
+        Parameters
+        ----------
+        X : np.ndarray, the indices of times/dates of the observed prices
+        y : np.ndarray, the observed prices or values on the given dates. If multiple
+            indices, then y will be a matrix, where the columns are the indices.
+
+        Returns
+        -------
+        self
+        """
+        raise NotImplementedError()
+
     def sample(
         self,
         init: Union[float, np.ndarray],
@@ -150,6 +169,9 @@ class Vasicek(DiffusionProcess):
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
 
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        raise NotImplementedError()
+
 
 class CoxIngersollRoss(DiffusionProcess):
     """Cox-Ingersoll-Ross short-rate model"""
@@ -180,6 +202,9 @@ class CoxIngersollRoss(DiffusionProcess):
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(k=self.k, theta=self.theta, sigma=self.sigma)
 
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        raise NotImplementedError()
+
 
 class GeometricBrownianMotion(DiffusionProcess):
     """Geometric Brownian Motion process"""
@@ -205,3 +230,6 @@ class GeometricBrownianMotion(DiffusionProcess):
     @property
     def _coefs(self) -> Dict[str, Optional[float]]:
         return dict(mu=self.mu, sigma=self.sigma)
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        raise NotImplementedError()
