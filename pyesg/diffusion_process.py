@@ -3,6 +3,8 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 from scipy import stats
 
+from .utils import check_random_state
+
 
 class DiffusionProcess:
     """
@@ -31,7 +33,7 @@ class DiffusionProcess:
         self,
         value: Union[float, np.ndarray],
         dt: float,
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
+        random_state: Union[int, np.random.RandomState, None] = None,
     ) -> np.ndarray:
         """
         Simulates the next value or array of values from the process,
@@ -67,7 +69,7 @@ class DiffusionProcess:
     def _dW(
         self,
         size: Tuple[int, ...],
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
+        random_state: Union[int, np.random.RandomState, None] = None,
     ) -> np.ndarray:
         """
         Returns a batch of random values for the process, given a size and optional
@@ -118,7 +120,7 @@ class DiffusionProcess:
         n_scen: int,
         n_year: int,
         n_step: int,
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
+        random_state: Union[int, np.random.RandomState, None] = None,
     ) -> np.ndarray:
         """
         Sample from the diffusion process for a number of scenarios and time steps.
@@ -144,14 +146,6 @@ class DiffusionProcess:
         if not self._is_fit():
             raise RuntimeError("Model parameters haven't been fit yet!")
 
-        # set a function-level pseudo random number generator, either by creating a new
-        # RandomState object with the integer argument, or using the RandomState object
-        # directly passed in the arguments.
-        if isinstance(random_state, int):
-            prng = np.random.RandomState(random_state)
-        else:
-            prng = random_state
-
         # create a shell array that we will populate with values once they are available
         samples = np.empty(shape=(n_scen, 1 + n_year * n_step, self.n_indices))
 
@@ -165,6 +159,11 @@ class DiffusionProcess:
             samples[:, 0, :] = init
         except ValueError as e:
             raise ValueError("'init' should have the same length as 'n_scen'") from e
+
+        # set a function-level pseudo random number generator, either by creating a new
+        # RandomState object with the integer argument, or using the RandomState object
+        # directly passed in the arguments.
+        prng = check_random_state(random_state)
 
         # generate the next value recursively, but vectorized across scenarios (columns)
         # also vectorized across indices, if applicable
@@ -192,7 +191,7 @@ class Vasicek(DiffusionProcess):
         self,
         value: Union[float, np.ndarray],
         dt: float,
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
+        random_state: Union[int, np.random.RandomState, None] = None,
     ) -> np.ndarray:
         if isinstance(value, float):
             # convert to a one-element array
@@ -224,7 +223,7 @@ class CoxIngersollRoss(DiffusionProcess):
         self,
         value: Union[float, np.ndarray],
         dt: float,
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
+        random_state: Union[int, np.random.RandomState, None] = None,
     ) -> np.ndarray:
         if isinstance(value, float):
             # convert to a one-element array
@@ -259,7 +258,7 @@ class GeometricBrownianMotion(DiffusionProcess):
         self,
         value: Union[float, np.ndarray],
         dt: float,
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
+        random_state: Union[int, np.random.RandomState, None] = None,
     ) -> np.ndarray:
         if isinstance(value, float):
             # convert to a one-element array
