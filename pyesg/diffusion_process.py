@@ -146,11 +146,6 @@ class DiffusionProcess:
         if not self._is_fit():
             raise RuntimeError("Model parameters haven't been fit yet!")
 
-        # set a function-level pseudo random number generator, either by creating a new
-        # RandomState object with the integer argument, or using the RandomState object
-        # directly passed in the arguments.
-        prng = check_random_state(random_state)
-
         # create a shell array that we will populate with values once they are available
         samples = np.empty(shape=(n_scen, 1 + n_year * n_step, self.n_indices))
 
@@ -164,6 +159,11 @@ class DiffusionProcess:
             samples[:, 0, :] = init
         except ValueError as e:
             raise ValueError("'init' should have the same length as 'n_scen'") from e
+
+        # set a function-level pseudo random number generator, either by creating a new
+        # RandomState object with the integer argument, or using the RandomState object
+        # directly passed in the arguments.
+        prng = check_random_state(random_state)
 
         # generate the next value recursively, but vectorized across scenarios (columns)
         # also vectorized across indices, if applicable
