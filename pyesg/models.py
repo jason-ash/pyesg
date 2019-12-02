@@ -17,7 +17,14 @@ class StochasticProcess(ABC):
         distribution from which samples should be drawn.
     """
 
-    def __init__(self, dW: stats.rv_continuous = stats.norm) -> None:
+    def __init__(
+        self,
+        mu: Optional[float] = None,
+        sigma: Optional[float] = None,
+        dW: stats.rv_continuous = stats.norm,
+    ) -> None:
+        self.mu = mu
+        self.sigma = sigma
         self.dW = dW
 
     def __repr__(self) -> str:
@@ -46,6 +53,27 @@ class StochasticProcess(ABC):
         -------
         samples : np.ndarray, the next values in the process
         """
+
+    @property
+    def mu(self) -> Optional[float]:
+        """Returns the drift parameter of the process"""
+        return self._mu
+
+    @mu.setter
+    def mu(self, value: Optional[float]) -> None:
+        self._mu = value
+
+    @property
+    def sigma(self) -> Optional[float]:
+        """Returns the volatility parameter of the process"""
+        return self._sigma
+
+    @sigma.setter
+    def sigma(self, value: Optional[float]) -> None:
+        if value:
+            if value < 0.0:
+                raise ValueError(f"{value} is not valid; sigma should be positive")
+        self._sigma = value
 
     @property
     def dW(self) -> stats.rv_continuous:
@@ -154,30 +182,7 @@ class WienerProcess(StochasticProcess):
     def __init__(
         self, mu: Optional[float] = None, sigma: Optional[float] = None
     ) -> None:
-        super().__init__()
-        self.mu = mu
-        self.sigma = sigma
-
-    @property
-    def mu(self) -> Optional[float]:
-        """Returns the drift parameter of the process"""
-        return self._mu
-
-    @mu.setter
-    def mu(self, value: Optional[float]) -> None:
-        self._mu = value
-
-    @property
-    def sigma(self) -> Optional[float]:
-        """Returns the volatility parameter of the process"""
-        return self._sigma
-
-    @sigma.setter
-    def sigma(self, value: Optional[float]) -> None:
-        if value:
-            if value < 0.0:
-                raise ValueError(f"{value} is not valid; sigma should be positive")
-        self._sigma = value
+        super().__init__(mu=mu, sigma=sigma)
 
     def __call__(
         self,
@@ -225,43 +230,8 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
         sigma: Optional[float] = None,
         theta: Optional[float] = None,
     ) -> None:
-        super().__init__()
-        self.mu = mu
-        self.sigma = sigma
+        super().__init__(mu=mu, sigma=sigma)
         self.theta = theta
-
-    @property
-    def mu(self) -> Optional[float]:
-        """Returns the drift parameter of the process"""
-        return self._mu
-
-    @mu.setter
-    def mu(self, value: Optional[float]) -> None:
-        self._mu = value
-
-    @property
-    def sigma(self) -> Optional[float]:
-        """Returns the volatility parameter of the process"""
-        return self._sigma
-
-    @sigma.setter
-    def sigma(self, value: Optional[float]) -> None:
-        if value:
-            if value < 0.0:
-                raise ValueError(f"{value} is not valid; sigma should be positive")
-        self._sigma = value
-
-    @property
-    def theta(self) -> Optional[float]:
-        """Returns the mean-reversion parameter of the process"""
-        return self._theta
-
-    @theta.setter
-    def theta(self, value: Optional[float]):
-        if value:
-            if value < 0.0:
-                raise ValueError(f"{value} is not valid; theta should be positive")
-        self._theta = value
 
     def __call__(
         self,
@@ -274,6 +244,18 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
             x0 = np.array([x0])
         rvs = self.dW.rvs(size=x0.shape, random_state=random_state)
         return x0 + self.theta * (self.mu - x0) * dt + self.sigma * dt ** 0.5 * rvs
+
+    @property
+    def theta(self) -> Optional[float]:
+        """Returns the mean-reversion parameter of the process"""
+        return self._theta
+
+    @theta.setter
+    def theta(self, value: Optional[float]):
+        if value:
+            if value < 0.0:
+                raise ValueError(f"{value} is not valid; theta should be positive")
+        self._theta = value
 
     def _coefs(self) -> Dict[str, Union[float, np.ndarray, None]]:
         return dict(mu=self.mu, sigma=self.sigma, theta=self.theta)
@@ -306,30 +288,7 @@ class GeometricBrownianMotion(StochasticProcess):
     def __init__(
         self, mu: Optional[float] = None, sigma: Optional[float] = None
     ) -> None:
-        super().__init__()
-        self.mu = mu
-        self.sigma = sigma
-
-    @property
-    def mu(self) -> Optional[float]:
-        """Returns the drift parameter of the process"""
-        return self._mu
-
-    @mu.setter
-    def mu(self, value: Optional[float]) -> None:
-        self._mu = value
-
-    @property
-    def sigma(self) -> Optional[float]:
-        """Returns the volatility parameter of the process"""
-        return self._sigma
-
-    @sigma.setter
-    def sigma(self, value: Optional[float]) -> None:
-        if value:
-            if value < 0.0:
-                raise ValueError(f"{value} is not valid; sigma should be positive")
-        self._sigma = value
+        super().__init__(mu=mu, sigma=sigma)
 
     def __call__(
         self,
