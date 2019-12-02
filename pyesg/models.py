@@ -279,6 +279,76 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
         return dict(mu=self.mu, sigma=self.sigma, theta=self.theta)
 
 
+class GeometricBrownianMotion(StochasticProcess):
+    """
+    Geometric Brownian Motion process: dS = μSdt + σSdW
+
+    Examples
+    --------
+    >>> gbm = GeometricBrownianMotion()
+    >>> gbm
+    <pyesg.GeometricBrownianMotion{'mu': None, 'sigma': None}>
+    >>> gbm._coefs()
+    {'mu': None, 'sigma': None}
+    >>> gbm.sigma = -0.20
+    Traceback (most recent call last):
+     ...
+    ValueError: -0.2 is not valid; sigma should be positive
+    >>> gbm.mu, gbm.sigma = 0.045, 0.15
+    >>> gbm.sample(10.0, 5, 4, 1, random_state=42)
+    array([[10.        , 11.14334229, 11.12808032, 10.73714278, 10.20743003],
+           [10.        , 10.13095358, 13.27957805, 12.80861392, 11.38097656],
+           [10.        , 11.3985753 , 13.2282353 , 14.18801968, 15.38333874],
+           [10.        , 12.99792295, 12.52990784,  9.72671649,  8.77952903],
+           [10.        ,  9.98627936, 11.20484298,  8.94735912,  7.4877089 ]])
+    """
+
+    def __init__(
+        self, mu: Optional[float] = None, sigma: Optional[float] = None
+    ) -> None:
+        super().__init__()
+        self.mu = mu
+        self.sigma = sigma
+
+    @property
+    def mu(self) -> Optional[float]:
+        """Returns the drift parameter of the process"""
+        return self._mu
+
+    @mu.setter
+    def mu(self, value: Optional[float]) -> None:
+        self._mu = value
+
+    @property
+    def sigma(self) -> Optional[float]:
+        """Returns the volatility parameter of the process"""
+        return self._sigma
+
+    @sigma.setter
+    def sigma(self, value: Optional[float]) -> None:
+        if value:
+            if value < 0.0:
+                raise ValueError(f"{value} is not valid; sigma should be positive")
+        self._sigma = value
+
+    def __call__(
+        self,
+        x0: Union[float, np.ndarray],
+        dt: float,
+        random_state: Union[int, np.random.RandomState, None] = None,
+    ) -> np.ndarray:
+        # if necessary, convert x0 to an array before starting
+        if isinstance(x0, float):
+            x0 = np.array([x0])
+        rvs = self.dW.rvs(size=x0.shape, random_state=random_state)
+        return x0 * np.exp(
+            (self.mu - self.sigma * self.sigma / 2) * dt + self.sigma * dt ** 0.5 * rvs
+        )
+
+    def _coefs(self) -> Dict[str, Union[float, np.ndarray, None]]:
+        return dict(mu=self.mu, sigma=self.sigma)
+
+
 if __name__ == "__main__":
     import doctest
 
