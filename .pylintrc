@@ -2,9 +2,7 @@
 disable=
     attribute-defined-outside-init,
     bad-continuation,
-    duplicate-code,
     invalid-name,
-    protected-access,
     too-many-arguments
 
 [TYPECHECK]
