@@ -202,7 +202,7 @@ class WienerProcess(StochasticProcess):
 
 class OrnsteinUhlenbeckProcess(StochasticProcess):
     """
-    Generalized Ornstein Uhlenbeck process: dr = θ * (μ - r)dt + σdW
+    Ornstein Uhlenbeck process: dX = θ * (μ - X)dt + σdW
 
     Examples
     --------
@@ -263,7 +263,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
 
 class GeometricBrownianMotion(StochasticProcess):
     """
-    Geometric Brownian Motion process: dS = μSdt + σSdW
+    Geometric Brownian Motion process: dX = μXdt + σXdW
 
     Examples
     --------
