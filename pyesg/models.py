@@ -21,10 +21,12 @@ class StochasticProcess(ABC):
         self,
         mu: Optional[float] = None,
         sigma: Optional[float] = None,
+        dim: int = 1,
         dW: stats.rv_continuous = stats.norm,
     ) -> None:
         self.mu = mu
         self.sigma = sigma
+        self.dim = dim
         self.dW = dW
 
     def __repr__(self) -> str:
@@ -74,6 +76,20 @@ class StochasticProcess(ABC):
             if value < 0.0:
                 raise ValueError(f"{value} is not valid; sigma should be positive")
         self._sigma = value
+
+    @property
+    def dim(self) -> int:
+        """
+        Returns the dimension of the stochastic process (dimension can be thought of as
+        the number of processes being modeled.)
+        """
+        return self._dim
+
+    @dim.setter
+    def dim(self, value: int) -> None:
+        if value < 1:
+            raise ValueError(f"{value} is not valid; dimension must be at least 1")
+        self._dim = value
 
     @property
     def dW(self) -> stats.rv_continuous:
@@ -180,9 +196,9 @@ class WienerProcess(StochasticProcess):
     """
 
     def __init__(
-        self, mu: Optional[float] = None, sigma: Optional[float] = None
+        self, mu: Optional[float] = None, sigma: Optional[float] = None, dim: int = 1
     ) -> None:
-        super().__init__(mu=mu, sigma=sigma)
+        super().__init__(mu=mu, sigma=sigma, dim=dim)
 
     def __call__(
         self,
@@ -229,8 +245,9 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
         mu: Optional[float] = None,
         sigma: Optional[float] = None,
         theta: Optional[float] = None,
+        dim: int = 1,
     ) -> None:
-        super().__init__(mu=mu, sigma=sigma)
+        super().__init__(mu=mu, sigma=sigma, dim=dim)
         self.theta = theta
 
     def __call__(
@@ -286,9 +303,9 @@ class GeometricBrownianMotion(StochasticProcess):
     """
 
     def __init__(
-        self, mu: Optional[float] = None, sigma: Optional[float] = None
+        self, mu: Optional[float] = None, sigma: Optional[float] = None, dim: int = 1
     ) -> None:
-        super().__init__(mu=mu, sigma=sigma)
+        super().__init__(mu=mu, sigma=sigma, dim=dim)
 
     def __call__(
         self,

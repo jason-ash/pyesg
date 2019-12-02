@@ -3,7 +3,8 @@ disable=
     attribute-defined-outside-init,
     bad-continuation,
     invalid-name,
-    too-many-arguments
+    too-many-arguments,
+    too-many-instance-attributes
 
 [TYPECHECK]
 
