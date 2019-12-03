@@ -28,13 +28,13 @@ class StochasticProcess(ABC):
     def __repr__(self) -> str:
         return f"<pyesg.{self.__class__.__name__}{self.coefs()}>"
 
-    @abstractmethod
-    def coefs(self) -> Dict[str, Vector]:
-        """Returns a dictionary of the process coefficients"""
-
     def _is_fit(self) -> bool:
         """Returns a boolean indicating whether the model parameters have been fit"""
         return all(self.coefs().values())
+
+    @abstractmethod
+    def coefs(self) -> Dict[str, Vector]:
+        """Returns a dictionary of the process coefficients"""
 
     @abstractmethod
     def drift(self, x0: Vector) -> Vector:
