@@ -7,8 +7,20 @@ from scipy import stats
 from pyesg.utils import check_random_state
 
 
+# typing aliases
+Vector = Union[float, np.ndarray]
+RandomState = Union[int, np.random.RandomState, None]
+
+
 class StochasticProcess(ABC):
-    """Abstract base class for a stochastic diffusion process"""
+    """
+    Abstract base class for a stochastic diffusion process
+
+    Parameters
+    ----------
+    dW : Scipy stats distribution object, default scipy.stats.norm. Specifies the
+        distribution from which samples should be drawn.
+    """
 
     def __init__(self, dW: stats.rv_continuous = stats.norm(0, 1)) -> None:
         self.dW = dW
@@ -17,38 +29,36 @@ class StochasticProcess(ABC):
         return f"<pyesg.{self.__class__.__name__}{self.coefs()}>"
 
     @abstractmethod
-    def coefs(self) -> Dict[str, Union[float, np.ndarray]]:
+    def coefs(self) -> Dict[str, Vector]:
         """Returns a dictionary of the process coefficients"""
 
+    def _is_fit(self) -> bool:
+        """Returns a boolean indicating whether the model parameters have been fit"""
+        return all(self.coefs().values())
+
     @abstractmethod
-    def drift(self, x0: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def drift(self, x0: Vector) -> Vector:
         """Returns the drift component of the stochastic process"""
 
     @abstractmethod
-    def diffusion(self, x0: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def diffusion(self, x0: Vector) -> Vector:
         """Returns the diffusion component of the stochastic process"""
 
-    def expectation(
-        self, x0: Union[float, np.ndarray], dt: float
-    ) -> Union[float, np.ndarray]:
+    def expectation(self, x0: Vector, dt: float) -> Vector:
         """
         Returns the expected value of the stochastic process using the Euler
         Discretization method
         """
         return x0 + self.drift(x0=x0) * dt
 
-    def standard_deviation(
-        self, x0: Union[float, np.ndarray], dt: float
-    ) -> Union[float, np.ndarray]:
+    def standard_deviation(self, x0: Vector, dt: float) -> Vector:
         """
         Returns the standard deviation of the stochastic process using the Euler
         Discretization method
         """
         return self.diffusion(x0=x0) * dt ** 0.5
 
-    def step(
-        self, x0: Union[float, np.ndarray], dt: float, random_state=None
-    ) -> Union[float, np.ndarray]:
+    def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
         """
         Applies the stochastic process to an array of initial values using the Euler
         Discretization method
@@ -84,21 +94,19 @@ class WienerProcess(StochasticProcess):
     array([0.14934283, 1.02234714, 2.17953771])
     """
 
-    def __init__(
-        self, mu: Union[float, np.ndarray], sigma: Union[float, np.ndarray]
-    ) -> None:
+    def __init__(self, mu: Vector, sigma: Vector) -> None:
         super().__init__()
         self.mu = mu
         self.sigma = sigma
 
-    def coefs(self) -> Dict[str, Union[float, np.ndarray]]:
+    def coefs(self) -> Dict[str, Vector]:
         return dict(mu=self.mu, sigma=self.sigma)
 
-    def drift(self, x0: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def drift(self, x0: Vector) -> Vector:
         # drift of a Wiener process does not depend on x0
         return self.mu
 
-    def diffusion(self, x0: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def diffusion(self, x0: Vector) -> Vector:
         # diffusion of a Wiener process does not depend on x0
         return self.sigma
 
