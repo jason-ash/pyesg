@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Union
 import numpy as np
 from scipy import stats
+from scipy.stats._distn_infrastructure import rv_continuous, rv_frozen
 
 from pyesg.utils import check_random_state
 
@@ -22,7 +23,7 @@ class StochasticProcess(ABC):
         distribution from which samples should be drawn.
     """
 
-    def __init__(self, dW: stats.rv_continuous = stats.norm(0, 1)) -> None:
+    def __init__(self, dW: rv_continuous = stats.norm) -> None:
         self.dW = dW
 
     def __repr__(self) -> str:
@@ -57,6 +58,29 @@ class StochasticProcess(ABC):
         Discretization method
         """
         return self.diffusion(x0=x0) * dt ** 0.5
+
+    def transition_dist(self, x0: Vector, dt: float) -> rv_frozen:
+        """
+        Returns a calibrated scipy.stats distribution object for the transition, given
+        a starting value, x0
+        """
+        mean = self.expectation(x0=x0, dt=dt)
+        std = self.standard_deviation(x0=x0, dt=dt)
+        return self.dW(loc=mean, scale=std)
+
+    def logpdf(self, x0: Vector, x1: Vector, dt: float) -> Vector:
+        """
+        Returns the log-probability of moving from x0 to x1 starting at time t and
+        moving to time t + dt
+        """
+        return self.transition_dist(x0=x0, dt=dt).logpdf(x1)
+
+    def nnlf(self, x0: Vector, x1: Vector, dt: float) -> float:
+        """
+        Returns the negative log-likelihood function of moving from x0 to x1 starting at
+        time t and moving to time t + dt
+        """
+        return -np.sum(self.logpdf(x0=x0, x1=x1, dt=dt))
 
     def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
         """
