@@ -1,6 +1,6 @@
 """Classes for stochastic processes"""
-from abc import ABC, abstractmethod
-from typing import Dict, Union
+from abc import ABC, abstractmethod, abstractproperty
+from typing import Dict, List, Tuple, Union
 import numpy as np
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_continuous, rv_frozen
@@ -82,6 +82,12 @@ class StochasticProcess(ABC):
         """
         return -np.sum(self.logpdf(x0=x0, xt=xt, dt=dt))
 
+    def rvs(
+        self, size: Tuple[int, ...], random_state: RandomState = None
+    ) -> np.ndarray:
+        """Returns an array of random numbers from the underlying distribution"""
+        return self.dW.rvs(size=size, random_state=check_random_state(random_state))
+
     def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
         """
         Applies the stochastic process to an array of initial values using the Euler
@@ -89,10 +95,43 @@ class StochasticProcess(ABC):
         """
         if isinstance(x0, (int, float)):
             x0 = np.array([x0], dtype=np.float64)
-        rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
+        dW = self.rvs(size=x0.shape, random_state=random_state)
         return (
-            self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * rvs
+            self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * dW
         )
+
+
+class JointStochasticProcess(StochasticProcess, ABC):
+    """
+    Abstract base class for a joint stochastic diffusion process: a process that
+    comprises several correlated stochastic processes, given a correlation matrix
+
+    Parameters
+    ----------
+    correlation : np.ndarray, a square matrix of correlations among the stochastic
+        portions of the processes. Its shape must match the number of processes.
+    """
+
+    def __init__(self, correlation: np.ndarray, dW: rv_continuous = stats.norm) -> None:
+        super().__init__(dW=dW)
+        self.correlation = correlation
+
+    @abstractproperty
+    def _processes(self) -> List[StochasticProcess]:
+        """
+        Returns a list of the underlying StochasticProcess objects that make up the
+        joint stochastic process
+        """
+
+    def rvs(
+        self, size: Tuple[int, ...], random_state: RandomState = None
+    ) -> np.ndarray:
+        """
+        Returns an array of correlated random numbers from the underlying distribution
+        """
+        cov = np.linalg.cholesky(self.correlation)
+        rvs = self.dW.rvs(size=size, random_state=check_random_state(random_state))
+        return rvs @ cov.T
 
 
 class WienerProcess(StochasticProcess):
@@ -215,6 +254,51 @@ class GeometricBrownianMotion(StochasticProcess):
 
     def diffusion(self, x0: Vector) -> Vector:
         return self.sigma * x0
+
+
+class JointWienerProcess(JointStochasticProcess):
+    """
+    Joint Wiener processes: dX = μdt + σdW
+
+    Examples
+    --------
+    >>> jwp = JointWienerProcess(
+    ...     mu=[0.05, 0.03], sigma=[0.20, 0.15], correlation=[[1.0, 0.5], [0.5, 1.0]]
+    ... )
+    >>> jwp
+    <pyesg.JointWienerProcess{'mu': [0.05, 0.03], 'sigma': [0.2, 0.15]}>
+    >>> jwp.drift(x0=[1.0, 1.0])
+    array([0.05, 0.03])
+    >>> jwp.diffusion(x0=[1.0, 1.0])
+    array([0.2 , 0.15])
+    >>> jwp.expectation(x0=[1.0, 1.0], dt=0.5)
+    array([1.025, 1.015])
+    >>> jwp.standard_deviation(x0=[1.0, 2.0], dt=2.0)
+    array([0.28284271, 0.21213203])
+    >>> jwp.step(x0=np.array([1.0, 1.0]), dt=1.0, random_state=42)
+    array([1.14934283, 1.0492925 ])
+    >>> jwp.correlation = [[1.0, 0.99], [0.99, 1.0]]
+    >>> jwp.step(x0=np.array([1.0, 1.0]), dt=1.0, random_state=42)
+    array([1.14934283, 1.10083636])
+    """
+
+    def __init__(self, mu: Vector, sigma: Vector, correlation: np.ndarray) -> None:
+        super().__init__(correlation=correlation)
+        self.mu = mu
+        self.sigma = sigma
+
+    @property
+    def _processes(self):
+        return [WienerProcess(mu=m, sigma=s) for m, s in zip(self.mu, self.sigma)]
+
+    def coefs(self) -> Dict[str, Vector]:
+        return dict(mu=self.mu, sigma=self.sigma)
+
+    def drift(self, x0: Vector) -> Vector:
+        return np.array([p.drift(x0=x0) for p in self._processes])
+
+    def diffusion(self, x0: Vector) -> Vector:
+        return np.array([p.diffusion(x0=x0) for p in self._processes])
 
 
 if __name__ == "__main__":
