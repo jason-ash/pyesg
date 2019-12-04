@@ -1,6 +1,6 @@
 """Top level imports"""
 from pyesg.interpolators import NelsonSiegel, NelsonSiegelSvensson
-from pyesg.models import (
+from pyesg.processes import (
     WienerProcess,
     OrnsteinUhlenbeckProcess,
     GeometricBrownianMotion,

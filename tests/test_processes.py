@@ -1,7 +1,10 @@
-"""Test pyesg process classes"""
+"""Tests for the Vasicek Model"""
 import doctest
+import unittest
+import numpy as np
 
 from pyesg import processes
+from pyesg import WienerProcess
 
 
 # pylint: disable=unused-argument,line-too-long
@@ -19,3 +22,19 @@ def load_tests(loader, tests, ignored):
     """
     tests.addTests(doctest.DocTestSuite(processes))
     return tests
+
+
+class TestWienerProcess(unittest.TestCase):
+    """Test WienerProcess"""
+
+    def test_sample_shapes(self):
+        """Ensure samples have the correct shape"""
+        model = WienerProcess(mu=0.045, sigma=0.15)
+        steps = model.step(x0=0.05, dt=1.0, random_state=None)
+        self.assertEqual(steps.shape, (1,))
+        steps = model.step(x0=np.array(0.05), dt=1.0, random_state=None)
+        self.assertEqual(steps.shape, ())
+        steps = model.step(x0=np.array([0.05]), dt=1.0, random_state=None)
+        self.assertEqual(steps.shape, (1,))
+        steps = model.step(x0=np.full(10, 0.05), dt=1.0, random_state=None)
+        self.assertEqual(steps.shape, (10,))
