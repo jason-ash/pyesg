@@ -64,23 +64,23 @@ class StochasticProcess(ABC):
         Returns a calibrated scipy.stats distribution object for the transition, given
         a starting value, x0
         """
-        mean = self.expectation(x0=x0, dt=dt)
-        std = self.standard_deviation(x0=x0, dt=dt)
-        return self.dW(loc=mean, scale=std)
+        loc = self.expectation(x0=x0, dt=dt)
+        scale = self.standard_deviation(x0=x0, dt=dt)
+        return self.dW(loc=loc, scale=scale)
 
-    def logpdf(self, x0: Vector, x1: Vector, dt: float) -> Vector:
+    def logpdf(self, x0: Vector, xt: Vector, dt: float) -> Vector:
         """
         Returns the log-probability of moving from x0 to x1 starting at time t and
         moving to time t + dt
         """
-        return self.transition_dist(x0=x0, dt=dt).logpdf(x1)
+        return self.transition_dist(x0=x0, dt=dt).logpdf(xt)
 
-    def nnlf(self, x0: Vector, x1: Vector, dt: float) -> float:
+    def nnlf(self, x0: Vector, xt: Vector, dt: float) -> Vector:
         """
         Returns the negative log-likelihood function of moving from x0 to x1 starting at
         time t and moving to time t + dt
         """
-        return -np.sum(self.logpdf(x0=x0, x1=x1, dt=dt))
+        return -np.sum(self.logpdf(x0=x0, xt=xt, dt=dt))
 
     def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
         """
@@ -132,6 +132,48 @@ class WienerProcess(StochasticProcess):
 
     def diffusion(self, x0: Vector) -> Vector:
         # diffusion of a Wiener process does not depend on x0
+        return self.sigma
+
+
+class OrnsteinUhlenbeckProcess(StochasticProcess):
+    """
+    Generalized Ornstein-Uhlenbeck process: dX = θ(μ - X)dt + σdW
+
+    Examples
+    --------
+    >>> ou = OrnsteinUhlenbeckProcess(mu=0.05, sigma=0.015, theta=0.15)
+    >>> ou
+    <pyesg.OrnsteinUhlenbeckProcess{'mu': 0.05, 'sigma': 0.015, 'theta': 0.15}>
+    >>> ou.drift(x0=0.05)
+    0.0
+    >>> ou.diffusion(x0=0.03)
+    0.015
+    >>> ou.expectation(x0=0.03, dt=0.5)
+    0.0315
+    >>> ou.standard_deviation(x0=0.03, dt=0.5)
+    0.010606601717798213
+    >>> ou.step(x0=0.03, dt=1.0, random_state=42)
+    array([0.04045071])
+    >>> ou.step(x0=np.array([0.03, 0.05, 0.09]), dt=1.0, random_state=42)
+    array([0.04045071, 0.04792604, 0.09371533])
+    >>> ou.logpdf(x0=0.05, xt=0.09, dt=1.0)
+    -0.2747890108803004
+    """
+
+    def __init__(self, mu: Vector, sigma: Vector, theta: Vector) -> None:
+        super().__init__()
+        self.mu = mu
+        self.sigma = sigma
+        self.theta = theta
+
+    def coefs(self) -> Dict[str, Vector]:
+        return dict(mu=self.mu, sigma=self.sigma, theta=self.theta)
+
+    def drift(self, x0: Vector) -> Vector:
+        return self.theta * (self.mu - x0)
+
+    def diffusion(self, x0: Vector) -> Vector:
+        # diffusion of an Ornstein-Uhlenbeck process does not depend on x0
         return self.sigma
 
 
