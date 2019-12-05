@@ -54,8 +54,8 @@ class JointWienerProcess(JointStochasticProcess):
     >>> jwp = JointWienerProcess(
     ...     mu=[0.05, 0.03], sigma=[0.20, 0.15], correlation=[[1.0, 0.5], [0.5, 1.0]]
     ... )
-    >>> jwp
-    <pyesg.JointWienerProcess{'mu': [0.05, 0.03], 'sigma': [0.2, 0.15]}>
+    >>> repr(jwp)[:75]
+    "<pyesg.JointWienerProcess{'mu': [0.05, 0.03], 'sigma': [0.2, 0.15], 'correl"
     >>> jwp.drift(x0=[1.0, 1.0])
     array([0.05, 0.03])
     >>> jwp.diffusion(x0=[1.0, 1.0])
@@ -81,7 +81,7 @@ class JointWienerProcess(JointStochasticProcess):
         return [WienerProcess(mu=m, sigma=s) for m, s in zip(self.mu, self.sigma)]
 
     def coefs(self) -> Dict[str, Vector]:
-        return dict(mu=self.mu, sigma=self.sigma)
+        return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ class GeometricBrownianMotion(StochasticProcess):
     0.14142135623730953
     >>> gbm.step(x0=1.0, dt=1.0, random_state=42)
     array([1.14934283])
-    >>> gbm.step(x0=np.array([1.0, 15.0, 50.0]), dt=1.0, random_state=42)
+    >>> gbm.step(x0=[1.0, 15.0, 50.0], dt=1.0, random_state=42)
     array([ 1.14934283, 15.3352071 , 58.97688538])
     >>> gbm.logpdf(x0=1.0, xt=1.1, dt=1.0)
     0.6592493792294276
