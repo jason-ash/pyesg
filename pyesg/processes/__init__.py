@@ -95,6 +95,8 @@ class StochasticProcess(ABC):
         """
         if isinstance(x0, (int, float)):
             x0 = np.array([x0], dtype=np.float64)
+        if isinstance(x0, list):
+            x0 = np.array(x0, dtype=np.float64)
         dW = self.rvs(size=x0.shape, random_state=random_state)
         return (
             self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * dW

@@ -23,7 +23,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
     0.010606601717798213
     >>> ou.step(x0=0.03, dt=1.0, random_state=42)
     array([0.04045071])
-    >>> ou.step(x0=np.array([0.03, 0.05, 0.09]), dt=1.0, random_state=42)
+    >>> ou.step(x0=[0.03, 0.05, 0.09], dt=1.0, random_state=42)
     array([0.04045071, 0.04792604, 0.09371533])
     >>> ou.logpdf(x0=0.05, xt=0.09, dt=1.0)
     -0.2747890108803004
