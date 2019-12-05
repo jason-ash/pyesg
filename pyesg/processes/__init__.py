@@ -52,7 +52,7 @@ class StochasticProcess(ABC):
         """
         return x0 + self.drift(x0=x0) * dt
 
-    def standard_deviation(self, x0: Vector, dt: float) -> Vector:
+    def standard_deviation(self, x0: Vector, dt: float) -> np.ndarray:
         """
         Returns the standard deviation of the stochastic process using the Euler
         Discretization method
@@ -103,10 +103,44 @@ class StochasticProcess(ABC):
         )
 
 
-class JointStochasticProcess(StochasticProcess, ABC):
+class MultiStochasticProcess(StochasticProcess):  # pylint: disable=abstract-method
     """
-    Abstract base class for a joint stochastic diffusion process: a process that
-    comprises several correlated stochastic processes, given a correlation matrix
+    Abstract base class for a multi-stochastic diffusion process: a process that
+    comprises at least two stochastic processes whose values depend on one another
+
+    Parameters
+    ----------
+    correlation : np.ndarray, a square matrix of correlations among the stochastic
+        portions of the processes. Its shape must match the number of processes
+    dW : Scipy stats distribution object, default scipy.stats.norm. Specifies the
+        distribution from which samples should be drawn.
+    """
+
+    def __init__(self, correlation: np.ndarray, dW: rv_continuous = stats.norm) -> None:
+        super().__init__(dW=dW)
+        self.correlation = correlation
+
+    def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
+        """
+        Applies the stochastic process to an array of initial values using the Euler
+        Discretization method
+        """
+        if isinstance(x0, (int, float)):
+            x0 = np.array([x0], dtype=np.float64)
+        if isinstance(x0, list):
+            x0 = np.array(x0, dtype=np.float64)
+        dW = self.rvs(size=x0[None, :].shape, random_state=random_state)
+        return (
+            self.expectation(x0=x0, dt=dt)
+            + (dW @ self.standard_deviation(x0=x0, dt=dt).T).squeeze()
+        )
+
+
+class StochasticProcessArray(StochasticProcess):
+    """
+    Abstract base class for a stochastic diffusion process array: a process that
+    comprises several correlated stochastic processes, given a correlation matrix, but
+    whose values don't depend on one another
 
     Parameters
     ----------

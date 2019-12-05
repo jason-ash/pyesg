@@ -2,7 +2,7 @@
 from typing import Dict
 import numpy as np
 
-from pyesg.processes import JointStochasticProcess, StochasticProcess, Vector
+from pyesg.processes import StochasticProcess, StochasticProcessArray, Vector
 
 
 class WienerProcess(StochasticProcess):
@@ -45,17 +45,17 @@ class WienerProcess(StochasticProcess):
         return self.sigma
 
 
-class JointWienerProcess(JointStochasticProcess):
+class WienerProcessArray(StochasticProcessArray):
     """
     Joint Wiener processes: dX = μdt + σdW
 
     Examples
     --------
-    >>> jwp = JointWienerProcess(
+    >>> jwp = WienerProcessArray(
     ...     mu=[0.05, 0.03], sigma=[0.20, 0.15], correlation=[[1.0, 0.5], [0.5, 1.0]]
     ... )
     >>> repr(jwp)[:75]
-    "<pyesg.JointWienerProcess{'mu': [0.05, 0.03], 'sigma': [0.2, 0.15], 'correl"
+    "<pyesg.WienerProcessArray{'mu': [0.05, 0.03], 'sigma': [0.2, 0.15], 'correl"
     >>> jwp.drift(x0=[1.0, 1.0])
     array([0.05, 0.03])
     >>> jwp.diffusion(x0=[1.0, 1.0])
