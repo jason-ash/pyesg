@@ -3,7 +3,13 @@ import doctest
 import unittest
 import numpy as np
 
-from pyesg import processes
+from pyesg.processes import (
+    cox_ingersoll_ross_process,
+    geometric_brownian_motion,
+    heston_process,
+    ornstein_uhlenbeck_process,
+    wiener_process,
+)
 from pyesg import WienerProcess
 
 
@@ -20,7 +26,11 @@ def load_tests(loader, tests, ignored):
     https://stackoverflow.com/questions/5681330/using-doctests-from-within-unittests
     https://docs.python.org/2/library/unittest.html#load-tests-protocol
     """
-    tests.addTests(doctest.DocTestSuite(processes))
+    tests.addTests(doctest.DocTestSuite(cox_ingersoll_ross_process))
+    tests.addTests(doctest.DocTestSuite(geometric_brownian_motion))
+    tests.addTests(doctest.DocTestSuite(heston_process))
+    tests.addTests(doctest.DocTestSuite(ornstein_uhlenbeck_process))
+    tests.addTests(doctest.DocTestSuite(wiener_process))
     return tests
 
 
@@ -33,7 +43,7 @@ class TestWienerProcess(unittest.TestCase):
         steps = model.step(x0=0.05, dt=1.0, random_state=None)
         self.assertEqual(steps.shape, (1,))
         steps = model.step(x0=np.array(0.05), dt=1.0, random_state=None)
-        self.assertEqual(steps.shape, ())
+        self.assertEqual(steps.shape, (1,))
         steps = model.step(x0=np.array([0.05]), dt=1.0, random_state=None)
         self.assertEqual(steps.shape, (1,))
         steps = model.step(x0=np.full(10, 0.05), dt=1.0, random_state=None)
