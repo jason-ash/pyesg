@@ -82,12 +82,6 @@ class StochasticProcess(ABC):
         """
         return -np.sum(self.logpdf(x0=x0, xt=xt, dt=dt))
 
-    def rvs(
-        self, size: Tuple[int, ...], random_state: RandomState = None
-    ) -> np.ndarray:
-        """Returns an array of random numbers from the underlying distribution"""
-        return self.dW.rvs(size=size, random_state=check_random_state(random_state))
-
     def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
         """
         Applies the stochastic process to an array of initial values using the Euler
@@ -97,9 +91,9 @@ class StochasticProcess(ABC):
             x0 = np.array([x0], dtype=np.float64)
         if isinstance(x0, list):
             x0 = np.array(x0, dtype=np.float64)
-        dW = self.rvs(size=x0.shape, random_state=random_state)
+        rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
         return (
-            self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * dW
+            self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * rvs
         )
 
 
@@ -130,8 +124,10 @@ class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-met
             x0 = np.array([x0], dtype=np.float64)
         if isinstance(x0, list):
             x0 = np.array(x0, dtype=np.float64)
-        dW = self.rvs(size=x0[None, :].shape, random_state=random_state)
+        rvs = self.dW.rvs(
+            size=x0[None, :].shape, random_state=check_random_state(random_state)
+        )
         return (
             self.expectation(x0=x0, dt=dt)
-            + (dW @ self.standard_deviation(x0=x0, dt=dt).T).squeeze()
+            + (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze()
         )
