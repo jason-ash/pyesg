@@ -3,7 +3,6 @@ from typing import Dict
 import numpy as np
 
 from pyesg.processes import StochasticProcess
-from pyesg.utils import to_array, Array
 
 
 class CoxIngersollRossProcess(StochasticProcess):
@@ -29,13 +28,13 @@ class CoxIngersollRossProcess(StochasticProcess):
     array([-18.00904939])
     """
 
-    def __init__(self, mu: Array, sigma: Array, theta: Array) -> None:
+    def __init__(self, mu: float, sigma: float, theta: float) -> None:
         super().__init__()
-        self.mu = to_array(mu)
-        self.sigma = to_array(sigma)
-        self.theta = to_array(theta)
+        self.mu = mu
+        self.sigma = sigma
+        self.theta = theta
 
-    def coefs(self) -> Dict[str, np.ndarray]:
+    def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma, theta=self.theta)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:

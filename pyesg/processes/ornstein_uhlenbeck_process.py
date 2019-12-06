@@ -3,7 +3,7 @@ from typing import Dict
 import numpy as np
 
 from pyesg.processes import StochasticProcess
-from pyesg.utils import to_array, Array
+from pyesg.utils import to_array
 
 
 class OrnsteinUhlenbeckProcess(StochasticProcess):
@@ -27,13 +27,13 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
     array([-0.27478901])
     """
 
-    def __init__(self, mu: Array, sigma: Array, theta: Array) -> None:
+    def __init__(self, mu: float, sigma: float, theta: float) -> None:
         super().__init__()
-        self.mu = to_array(mu)
-        self.sigma = to_array(sigma)
-        self.theta = to_array(theta)
+        self.mu = mu
+        self.sigma = sigma
+        self.theta = theta
 
-    def coefs(self) -> Dict[str, np.ndarray]:
+    def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma, theta=self.theta)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
@@ -41,7 +41,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion of an Ornstein-Uhlenbeck process does not depend on x0
-        return self.sigma
+        return to_array(self.sigma)
 
 
 if __name__ == "__main__":

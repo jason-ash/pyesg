@@ -3,7 +3,6 @@ from typing import Dict
 import numpy as np
 
 from pyesg.processes import StochasticProcess
-from pyesg.utils import to_array, Array
 
 
 class GeometricBrownianMotion(StochasticProcess):
@@ -14,7 +13,7 @@ class GeometricBrownianMotion(StochasticProcess):
     --------
     >>> gbm = GeometricBrownianMotion(mu=0.05, sigma=0.2)
     >>> gbm
-    <pyesg.GeometricBrownianMotion{'mu': array([0.05]), 'sigma': array([0.2])}>
+    <pyesg.GeometricBrownianMotion{'mu': 0.05, 'sigma': 0.2}>
     >>> gbm.drift(x0=2.0)
     array([0.1])
     >>> gbm.diffusion(x0=2.0)
@@ -31,12 +30,12 @@ class GeometricBrownianMotion(StochasticProcess):
     array([0.65924938])
     """
 
-    def __init__(self, mu: Array, sigma: Array) -> None:
+    def __init__(self, mu: float, sigma: float) -> None:
         super().__init__()
-        self.mu = to_array(mu)
-        self.sigma = to_array(sigma)
+        self.mu = mu
+        self.sigma = sigma
 
-    def coefs(self) -> Dict[str, np.ndarray]:
+    def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:

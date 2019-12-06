@@ -29,12 +29,12 @@ class WienerProcess(StochasticProcess):
     array([0.14934283, 1.02234714, 2.17953771])
     """
 
-    def __init__(self, mu: Array, sigma: Array) -> None:
+    def __init__(self, mu: float, sigma: float) -> None:
         super().__init__()
         self.mu = to_array(mu)
         self.sigma = to_array(sigma)
 
-    def coefs(self) -> Dict[str, Array]:
+    def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
@@ -78,12 +78,12 @@ class JointWienerProcess(JointStochasticProcess):
         self.sigma = to_array(sigma)
         self.correlation = to_array(correlation)
 
-    def coefs(self) -> Dict[str, Array]:
+    def coefs(self) -> Dict[str, np.ndarray]:
         return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # for this joint process, mu is already an array of expected returns
-        return np.array(self.mu)
+        return self.mu
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion does not depend on x0
