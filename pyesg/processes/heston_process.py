@@ -2,7 +2,8 @@
 from typing import Dict
 import numpy as np
 
-from pyesg.processes import JointStochasticProcess, Vector
+from pyesg.processes import JointStochasticProcess
+from pyesg.utils import to_array, Array
 
 
 class HestonProcess(JointStochasticProcess):
@@ -26,16 +27,17 @@ class HestonProcess(JointStochasticProcess):
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, mu: Vector, theta: Vector, kappa: Vector, sigma: Vector, rho: Vector
+        self, mu: Array, theta: Array, kappa: Array, sigma: Array, rho: Array
     ) -> None:
-        super().__init__(correlation=np.array([[1.0, rho], [rho, 1.0]]))
-        self.mu = mu
-        self.theta = theta
-        self.kappa = kappa
-        self.sigma = sigma
-        self.rho = rho
+        super().__init__()
+        self.mu = to_array(mu)
+        self.theta = to_array(theta)
+        self.kappa = to_array(kappa)
+        self.sigma = to_array(sigma)
+        self.rho = to_array(rho)
+        self.correlation = np.array([[1.0, rho], [rho, 1.0]])
 
-    def coefs(self) -> Dict[str, Vector]:
+    def coefs(self) -> Dict[str, np.ndarray]:
         return dict(
             mu=self.mu,
             theta=self.theta,
@@ -44,16 +46,16 @@ class HestonProcess(JointStochasticProcess):
             rho=self.rho,
         )
 
-    def drift(self, x0: np.ndarray) -> np.ndarray:
+    def _drift(self, x0: np.ndarray) -> np.ndarray:
         # floor volatility at zero
         vol = max(0.0, x0[1] ** 0.5)
 
         # drift of the underlying asset price and the variance, separately
         underlying = self.mu * x0[0]
         variance = self.kappa * (self.theta - vol * vol)
-        return np.array([underlying, variance])
+        return np.hstack([underlying, variance])
 
-    def diffusion(self, x0: np.ndarray) -> np.ndarray:
+    def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # floor volatility near zero, but positive, to keep correlation effect
         vol = max(1e-6, x0[1] ** 0.5)
 

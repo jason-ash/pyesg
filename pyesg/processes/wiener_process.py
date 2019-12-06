@@ -2,7 +2,8 @@
 from typing import Dict
 import numpy as np
 
-from pyesg.processes import JointStochasticProcess, StochasticProcess, Vector
+from pyesg.processes import JointStochasticProcess, StochasticProcess
+from pyesg.utils import to_array, Array
 
 
 class WienerProcess(StochasticProcess):
@@ -13,34 +14,34 @@ class WienerProcess(StochasticProcess):
     --------
     >>> wp = WienerProcess(mu=0.05, sigma=0.2)
     >>> wp
-    <pyesg.WienerProcess{'mu': 0.05, 'sigma': 0.2}>
+    <pyesg.WienerProcess{'mu': array([0.05]), 'sigma': array([0.2])}>
     >>> wp.drift(x0=0.0)
-    0.05
+    array([0.05])
     >>> wp.diffusion(x0=0.0)
-    0.2
+    array([0.2])
     >>> wp.expectation(x0=0.0, dt=0.5)
-    0.025
+    array([0.025])
     >>> wp.standard_deviation(x0=0.0, dt=0.5)
-    0.14142135623730953
+    array([0.14142136])
     >>> wp.step(x0=0.0, dt=1.0, random_state=42)
     array([0.14934283])
     >>> wp.step(x0=np.array([0.0, 1.0, 2.0]), dt=1.0, random_state=42)
     array([0.14934283, 1.02234714, 2.17953771])
     """
 
-    def __init__(self, mu: Vector, sigma: Vector) -> None:
+    def __init__(self, mu: Array, sigma: Array) -> None:
         super().__init__()
-        self.mu = mu
-        self.sigma = sigma
+        self.mu = to_array(mu)
+        self.sigma = to_array(sigma)
 
-    def coefs(self) -> Dict[str, Vector]:
+    def coefs(self) -> Dict[str, Array]:
         return dict(mu=self.mu, sigma=self.sigma)
 
-    def drift(self, x0: Vector) -> Vector:
+    def _drift(self, x0: np.ndarray) -> np.ndarray:
         # drift of a Wiener process does not depend on x0
         return self.mu
 
-    def diffusion(self, x0: Vector) -> Vector:
+    def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion of a Wiener process does not depend on x0
         return self.sigma
 
@@ -71,19 +72,21 @@ class JointWienerProcess(JointStochasticProcess):
     array([1.14934283, 1.10083636])
     """
 
-    def __init__(self, mu: Vector, sigma: Vector, correlation: np.ndarray) -> None:
-        super().__init__(correlation=correlation)
-        self.mu = mu
-        self.sigma = sigma
+    def __init__(self, mu: Array, sigma: Array, correlation: np.ndarray) -> None:
+        super().__init__()
+        self.mu = to_array(mu)
+        self.sigma = to_array(sigma)
+        self.correlation = to_array(correlation)
 
-    def coefs(self) -> Dict[str, Vector]:
+    def coefs(self) -> Dict[str, Array]:
         return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
 
-    def drift(self, x0: np.ndarray) -> np.ndarray:
+    def _drift(self, x0: np.ndarray) -> np.ndarray:
         # for this joint process, mu is already an array of expected returns
         return np.array(self.mu)
 
-    def diffusion(self, x0: np.ndarray) -> np.ndarray:
+    def _diffusion(self, x0: np.ndarray) -> np.ndarray:
+        # diffusion does not depend on x0
         volatility = np.diag(self.sigma)
         cholesky = np.linalg.cholesky(self.correlation)
         return volatility @ cholesky
