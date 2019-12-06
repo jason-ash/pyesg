@@ -103,10 +103,11 @@ class StochasticProcess(ABC):
         )
 
 
-class MultiStochasticProcess(StochasticProcess):  # pylint: disable=abstract-method
+class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-method
     """
-    Abstract base class for a multi-stochastic diffusion process: a process that
-    comprises at least two stochastic processes whose values depend on one another
+    Abstract base class for a joint stochastic diffusion process: a process that
+    comprises at least two correlated stochastic processes whose values may or may not
+    depend on one another
 
     Parameters
     ----------
@@ -134,45 +135,3 @@ class MultiStochasticProcess(StochasticProcess):  # pylint: disable=abstract-met
             self.expectation(x0=x0, dt=dt)
             + (dW @ self.standard_deviation(x0=x0, dt=dt).T).squeeze()
         )
-
-
-class StochasticProcessArray(StochasticProcess):
-    """
-    Abstract base class for a stochastic diffusion process array: a process that
-    comprises several correlated stochastic processes, given a correlation matrix, but
-    whose values don't depend on one another
-
-    Parameters
-    ----------
-    correlation : np.ndarray, a square matrix of correlations among the stochastic
-        portions of the processes. Its shape must match the number of processes.
-    """
-
-    def __init__(self, correlation: np.ndarray, dW: rv_continuous = stats.norm) -> None:
-        super().__init__(dW=dW)
-        self.correlation = correlation
-
-    @abstractproperty
-    def processes(self) -> List[StochasticProcess]:
-        """
-        Returns a list of the underlying StochasticProcess objects that make up the
-        joint stochastic process
-        """
-
-    def drift(self, x0: Vector) -> Vector:
-        """Returns an array of the drifts of the underlying processes in order"""
-        return np.array([p.drift(x0=x0) for p in self.processes])
-
-    def diffusion(self, x0: Vector) -> Vector:
-        """Returns an array of the diffusions of the underlying processes in order"""
-        return np.array([p.diffusion(x0=x0) for p in self.processes])
-
-    def rvs(
-        self, size: Tuple[int, ...], random_state: RandomState = None
-    ) -> np.ndarray:
-        """
-        Returns an array of correlated random numbers from the underlying distribution
-        """
-        cov = np.linalg.cholesky(self.correlation)
-        rvs = self.dW.rvs(size=size, random_state=check_random_state(random_state))
-        return rvs @ cov.T

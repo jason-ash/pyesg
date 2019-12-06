@@ -2,10 +2,10 @@
 from typing import Dict
 import numpy as np
 
-from pyesg.processes import MultiStochasticProcess, Vector
+from pyesg.processes import JointStochasticProcess, Vector
 
 
-class HestonProcess(MultiStochasticProcess):
+class HestonProcess(JointStochasticProcess):
     """
     Heston stochastic volatility process
 
