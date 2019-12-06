@@ -54,16 +54,16 @@ class JointWienerProcess(JointStochasticProcess):
     >>> jwp = JointWienerProcess(
     ...     mu=[0.05, 0.03], sigma=[0.20, 0.15], correlation=[[1.0, 0.5], [0.5, 1.0]]
     ... )
-    >>> repr(jwp)[:75]
-    "<pyesg.JointWienerProcess{'mu': [0.05, 0.03], 'sigma': [0.2, 0.15], 'correl"
     >>> jwp.drift(x0=[1.0, 1.0])
     array([0.05, 0.03])
     >>> jwp.diffusion(x0=[1.0, 1.0])
-    array([0.2 , 0.15])
+    array([[0.2       , 0.        ],
+           [0.075     , 0.12990381]])
     >>> jwp.expectation(x0=[1.0, 1.0], dt=0.5)
     array([1.025, 1.015])
     >>> jwp.standard_deviation(x0=[1.0, 2.0], dt=2.0)
-    array([0.28284271, 0.21213203])
+    array([[0.28284271, 0.        ],
+           [0.10606602, 0.18371173]])
     >>> jwp.step(x0=np.array([1.0, 1.0]), dt=1.0, random_state=42)
     array([1.14934283, 1.0492925 ])
     >>> jwp.correlation = [[1.0, 0.99], [0.99, 1.0]]
@@ -76,12 +76,17 @@ class JointWienerProcess(JointStochasticProcess):
         self.mu = mu
         self.sigma = sigma
 
-    @property
-    def processes(self):
-        return [WienerProcess(mu=m, sigma=s) for m, s in zip(self.mu, self.sigma)]
-
     def coefs(self) -> Dict[str, Vector]:
         return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
+
+    def drift(self, x0: np.ndarray) -> np.ndarray:
+        # for this joint process, mu is already an array of expected returns
+        return np.array(self.mu)
+
+    def diffusion(self, x0: np.ndarray) -> np.ndarray:
+        volatility = np.diag(self.sigma)
+        cholesky = np.linalg.cholesky(self.correlation)
+        return volatility @ cholesky
 
 
 if __name__ == "__main__":

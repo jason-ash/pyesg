@@ -52,7 +52,7 @@ class StochasticProcess(ABC):
         """
         return x0 + self.drift(x0=x0) * dt
 
-    def standard_deviation(self, x0: Vector, dt: float) -> Vector:
+    def standard_deviation(self, x0: Vector, dt: float) -> np.ndarray:
         """
         Returns the standard deviation of the stochastic process using the Euler
         Discretization method
@@ -82,11 +82,38 @@ class StochasticProcess(ABC):
         """
         return -np.sum(self.logpdf(x0=x0, xt=xt, dt=dt))
 
-    def rvs(
-        self, size: Tuple[int, ...], random_state: RandomState = None
-    ) -> np.ndarray:
-        """Returns an array of random numbers from the underlying distribution"""
-        return self.dW.rvs(size=size, random_state=check_random_state(random_state))
+    def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
+        """
+        Applies the stochastic process to an array of initial values using the Euler
+        Discretization method
+        """
+        if isinstance(x0, (int, float)):
+            x0 = np.array([x0], dtype=np.float64)
+        if isinstance(x0, list):
+            x0 = np.array(x0, dtype=np.float64)
+        rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
+        return (
+            self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * rvs
+        )
+
+
+class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-method
+    """
+    Abstract base class for a joint stochastic diffusion process: a process that
+    comprises at least two correlated stochastic processes whose values may or may not
+    depend on one another
+
+    Parameters
+    ----------
+    correlation : np.ndarray, a square matrix of correlations among the stochastic
+        portions of the processes. Its shape must match the number of processes
+    dW : Scipy stats distribution object, default scipy.stats.norm. Specifies the
+        distribution from which samples should be drawn.
+    """
+
+    def __init__(self, correlation: np.ndarray, dW: rv_continuous = stats.norm) -> None:
+        super().__init__(dW=dW)
+        self.correlation = correlation
 
     def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
         """
@@ -97,48 +124,10 @@ class StochasticProcess(ABC):
             x0 = np.array([x0], dtype=np.float64)
         if isinstance(x0, list):
             x0 = np.array(x0, dtype=np.float64)
-        dW = self.rvs(size=x0.shape, random_state=random_state)
-        return (
-            self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * dW
+        rvs = self.dW.rvs(
+            size=x0[None, :].shape, random_state=check_random_state(random_state)
         )
-
-
-class JointStochasticProcess(StochasticProcess, ABC):
-    """
-    Abstract base class for a joint stochastic diffusion process: a process that
-    comprises several correlated stochastic processes, given a correlation matrix
-
-    Parameters
-    ----------
-    correlation : np.ndarray, a square matrix of correlations among the stochastic
-        portions of the processes. Its shape must match the number of processes.
-    """
-
-    def __init__(self, correlation: np.ndarray, dW: rv_continuous = stats.norm) -> None:
-        super().__init__(dW=dW)
-        self.correlation = correlation
-
-    @abstractproperty
-    def processes(self) -> List[StochasticProcess]:
-        """
-        Returns a list of the underlying StochasticProcess objects that make up the
-        joint stochastic process
-        """
-
-    def drift(self, x0: Vector) -> Vector:
-        """Returns an array of the drifts of the underlying processes in order"""
-        return np.array([p.drift(x0=x0) for p in self.processes])
-
-    def diffusion(self, x0: Vector) -> Vector:
-        """Returns an array of the diffusions of the underlying processes in order"""
-        return np.array([p.diffusion(x0=x0) for p in self.processes])
-
-    def rvs(
-        self, size: Tuple[int, ...], random_state: RandomState = None
-    ) -> np.ndarray:
-        """
-        Returns an array of correlated random numbers from the underlying distribution
-        """
-        cov = np.linalg.cholesky(self.correlation)
-        rvs = self.dW.rvs(size=size, random_state=check_random_state(random_state))
-        return rvs @ cov.T
+        return (
+            self.expectation(x0=x0, dt=dt)
+            + (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze()
+        )
