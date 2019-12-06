@@ -17,9 +17,7 @@ def _has_valid_cholesky(matrix: np.ndarray) -> bool:
         return False
 
 
-def check_random_state(
-    seed: Union[int, np.random.RandomState, None]
-) -> np.random.RandomState:
+def check_random_state(seed: RandomState) -> np.random.RandomState:
     """
     Returns a numpy RandomState object from any of an integer, a RandomState object, or
     a None value (randomly instantiated RandomState object)
