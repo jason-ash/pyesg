@@ -48,12 +48,11 @@ class HestonProcess(JointStochasticProcess):
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # floor volatility at zero
+        underlying = x0[0]
         vol = max(0.0, x0[1] ** 0.5)
 
         # drift of the underlying asset price and the variance, separately
-        underlying = self.mu * x0[0]
-        variance = self.kappa * (self.theta - vol * vol)
-        return np.hstack([underlying, variance])
+        return np.hstack([self.mu * underlying, self.kappa * (self.theta - vol * vol)])
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # floor volatility near zero, but positive, to keep correlation effect
