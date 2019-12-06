@@ -3,6 +3,7 @@ import doctest
 import unittest
 import numpy as np
 
+from pyesg import WienerProcess
 from pyesg.processes import (
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
@@ -10,7 +11,7 @@ from pyesg.processes import (
     ornstein_uhlenbeck_process,
     wiener_process,
 )
-from pyesg import WienerProcess
+from pyesg import utils
 
 
 # pylint: disable=unused-argument,line-too-long
@@ -26,6 +27,7 @@ def load_tests(loader, tests, ignored):
     https://stackoverflow.com/questions/5681330/using-doctests-from-within-unittests
     https://docs.python.org/2/library/unittest.html#load-tests-protocol
     """
+    tests.addTests(doctest.DocTestSuite(utils))
     tests.addTests(doctest.DocTestSuite(cox_ingersoll_ross_process))
     tests.addTests(doctest.DocTestSuite(geometric_brownian_motion))
     tests.addTests(doctest.DocTestSuite(heston_process))
