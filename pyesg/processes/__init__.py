@@ -5,12 +5,7 @@ import numpy as np
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_continuous, rv_frozen
 
-from pyesg.utils import check_random_state
-
-
-# typing aliases
-Vector = Union[float, np.ndarray]
-RandomState = Union[int, np.random.RandomState, None]
+from pyesg.utils import check_random_state, to_array, Array, RandomState
 
 
 class StochasticProcess(ABC):
@@ -34,32 +29,40 @@ class StochasticProcess(ABC):
         return all(self.coefs().values())
 
     @abstractmethod
-    def coefs(self) -> Dict[str, Vector]:
-        """Returns a dictionary of the process coefficients"""
-
-    @abstractmethod
-    def drift(self, x0: Vector) -> Vector:
+    def _drift(self, x0: np.ndarray) -> np.ndarray:
         """Returns the drift component of the stochastic process"""
 
     @abstractmethod
-    def diffusion(self, x0: Vector) -> Vector:
+    def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         """Returns the diffusion component of the stochastic process"""
 
-    def expectation(self, x0: Vector, dt: float) -> Vector:
+    @abstractmethod
+    def coefs(self) -> Dict[str, np.ndarray]:
+        """Returns a dictionary of the process coefficients"""
+
+    def drift(self, x0: Array) -> np.ndarray:
+        """Returns the drift component of the stochastic process"""
+        return self._drift(x0=to_array(x0))
+
+    def diffusion(self, x0: Array) -> np.ndarray:
+        """Returns the diffusion component of the stochastic process"""
+        return self._diffusion(x0=to_array(x0))
+
+    def expectation(self, x0: Array, dt: float) -> np.ndarray:
         """
         Returns the expected value of the stochastic process using the Euler
         Discretization method
         """
-        return x0 + self.drift(x0=x0) * dt
+        return to_array(x0) + self.drift(x0=x0) * dt
 
-    def standard_deviation(self, x0: Vector, dt: float) -> np.ndarray:
+    def standard_deviation(self, x0: Array, dt: float) -> np.ndarray:
         """
         Returns the standard deviation of the stochastic process using the Euler
         Discretization method
         """
         return self.diffusion(x0=x0) * dt ** 0.5
 
-    def transition_distribution(self, x0: Vector, dt: float) -> rv_frozen:
+    def transition_distribution(self, x0: Array, dt: float) -> rv_frozen:
         """
         Returns a calibrated scipy.stats distribution object for the transition, given
         a starting value, x0
@@ -68,32 +71,31 @@ class StochasticProcess(ABC):
         scale = self.standard_deviation(x0=x0, dt=dt)
         return self.dW(loc=loc, scale=scale)
 
-    def logpdf(self, x0: Vector, xt: Vector, dt: float) -> Vector:
+    def logpdf(self, x0: Array, xt: Array, dt: float) -> np.ndarray:
         """
         Returns the log-probability of moving from x0 to x1 starting at time t and
         moving to time t + dt
         """
-        return self.transition_distribution(x0=x0, dt=dt).logpdf(xt)
+        return self.transition_distribution(x0=to_array(x0), dt=dt).logpdf(xt)
 
-    def nnlf(self, x0: Vector, xt: Vector, dt: float) -> Vector:
+    def nnlf(self, x0: Array, xt: Array, dt: float) -> np.ndarray:
         """
         Returns the negative log-likelihood function of moving from x0 to x1 starting at
         time t and moving to time t + dt
         """
-        return -np.sum(self.logpdf(x0=x0, xt=xt, dt=dt))
+        return -np.sum(self.logpdf(x0=to_array(x0), xt=to_array(xt), dt=dt))
 
-    def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
+    def step(
+        self, x0: Array, dt: float, random_state: RandomState = None
+    ) -> np.ndarray:
         """
         Applies the stochastic process to an array of initial values using the Euler
         Discretization method
         """
-        if isinstance(x0, (int, float)):
-            x0 = np.array([x0], dtype=np.float64)
-        if isinstance(x0, list):
-            x0 = np.array(x0, dtype=np.float64)
+        x0 = to_array(x0)
         rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
-        return (
-            self.expectation(x0=x0, dt=dt) + self.standard_deviation(x0=x0, dt=dt) * rvs
+        return to_array(
+            self.expectation(x0=x0, dt=dt) + rvs * self.standard_deviation(x0=x0, dt=dt)
         )
 
 
@@ -111,19 +113,17 @@ class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-met
         distribution from which samples should be drawn.
     """
 
-    def __init__(self, correlation: np.ndarray, dW: rv_continuous = stats.norm) -> None:
+    def __init__(self, dW: rv_continuous = stats.norm) -> None:
         super().__init__(dW=dW)
-        self.correlation = correlation
 
-    def step(self, x0: Vector, dt: float, random_state: RandomState = None) -> Vector:
+    def step(
+        self, x0: Array, dt: float, random_state: RandomState = None
+    ) -> np.ndarray:
         """
         Applies the stochastic process to an array of initial values using the Euler
         Discretization method
         """
-        if isinstance(x0, (int, float)):
-            x0 = np.array([x0], dtype=np.float64)
-        if isinstance(x0, list):
-            x0 = np.array(x0, dtype=np.float64)
+        x0 = to_array(x0)
         rvs = self.dW.rvs(
             size=x0[None, :].shape, random_state=check_random_state(random_state)
         )

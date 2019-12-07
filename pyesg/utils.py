@@ -1,6 +1,11 @@
 """Useful functions"""
-from typing import Union
+from typing import List, Union
 import numpy as np
+
+
+# typing aliases
+Array = Union[float, int, List[float], List[int], np.ndarray]
+RandomState = Union[int, np.random.RandomState, None]
 
 
 def _has_valid_cholesky(matrix: np.ndarray) -> bool:
@@ -12,9 +17,7 @@ def _has_valid_cholesky(matrix: np.ndarray) -> bool:
         return False
 
 
-def check_random_state(
-    seed: Union[int, np.random.RandomState, None]
-) -> np.random.RandomState:
+def check_random_state(seed: RandomState) -> np.random.RandomState:
     """
     Returns a numpy RandomState object from any of an integer, a RandomState object, or
     a None value (randomly instantiated RandomState object)
@@ -26,3 +29,59 @@ def check_random_state(
     if isinstance(seed, np.random.RandomState):
         return seed
     raise ValueError("Invalid argument type to convert to a RandomState object")
+
+
+def to_array(value: Array) -> np.ndarray:
+    """
+    Converts an input value(s) to a numpy float64 array.
+
+    Parameters
+    ----------
+    x0 : float, int, List[float], List[int], np.ndarray, an "array" of initial
+        values to pass into one of the process methods
+
+    Returns
+    -------
+    x0 : np.ndarray, a numpy array version of the original values passed
+
+    Raises
+    ------
+    TypeError : if value is not one of the handled types
+
+    Examples
+    --------
+    >>> to_array(10)
+    array([10.])
+    >>> to_array(15.0)
+    array([15.])
+    >>> to_array([10, 11])
+    array([10., 11.])
+    >>> to_array([15., 16.])
+    array([15., 16.])
+    >>> to_array([10, 11.5])
+    array([10. , 11.5])
+    >>> to_array(np.array([10, 12]))
+    array([10., 12.])
+    >>> to_array(np.array(5))
+    array([5.])
+    >>> to_array(np.array([0.3, 0.5, 0.7]))
+    array([0.3, 0.5, 0.7])
+    >>> to_array([[1.0, 0.5], [0.5, 1.0]])
+    array([[1. , 0.5],
+           [0.5, 1. ]])
+    """
+    if isinstance(value, (int, float)):
+        return np.array([value], dtype=np.float64)
+    if isinstance(value, list):
+        return np.array(value, dtype=np.float64)
+    if isinstance(value, np.ndarray):
+        if value.shape == ():
+            return value.astype(np.float64)[None]
+        return value.astype(np.float64)
+    raise TypeError(f"{value} is not a valid type")
+
+
+if __name__ == "__main__":
+    import doctest
+
+    print(doctest.testmod())
