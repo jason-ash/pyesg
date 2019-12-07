@@ -18,6 +18,7 @@ class AcademyRateProcess(JointStochasticProcess):
     Examples
     --------
     >>> arp = AcademyRateProcess()
+    >>> arp
     >>> arp.correlation
     array([[ 1.     , -0.19197,  0.     ],
            [-0.19197,  1.     ,  0.     ],
@@ -78,7 +79,22 @@ class AcademyRateProcess(JointStochasticProcess):
         )
 
     def coefs(self) -> Dict[str, float]:
-        raise NotImplementedError()
+        return dict(
+            beta1=self.beta1,
+            beta2=self.beta2,
+            beta3=self.beta3,
+            rho12=self.rho12,
+            rho13=self.rho13,
+            rho23=self.rho23,
+            sigma2=self.sigma2,
+            sigma3=self.sigma3,
+            tau1=self.tau1,
+            tau2=self.tau2,
+            tau3=self.tau3,
+            theta=self.theta,
+            phi=self.phi,
+            psi=self.psi,
+        )
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         raise NotImplementedError()
