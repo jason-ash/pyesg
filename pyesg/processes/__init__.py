@@ -94,10 +94,9 @@ class StochasticProcess(ABC):
         """
         x0 = to_array(x0)
         rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
-        out = self.expectation(x0=x0, dt=dt) + rvs * self.standard_deviation(
-            x0=x0, dt=dt
+        return to_array(
+            self.expectation(x0=x0, dt=dt) + rvs * self.standard_deviation(x0=x0, dt=dt)
         )
-        return to_array(out)
 
 
 class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-method
