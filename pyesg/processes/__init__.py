@@ -76,14 +76,14 @@ class StochasticProcess(ABC):
         Returns the log-probability of moving from x0 to x1 starting at time t and
         moving to time t + dt
         """
-        return self.transition_distribution(x0=x0, dt=dt).logpdf(xt)
+        return self.transition_distribution(x0=to_array(x0), dt=dt).logpdf(xt)
 
     def nnlf(self, x0: Array, xt: Array, dt: float) -> np.ndarray:
         """
         Returns the negative log-likelihood function of moving from x0 to x1 starting at
         time t and moving to time t + dt
         """
-        return -np.sum(self.logpdf(x0=x0, xt=xt, dt=dt))
+        return -np.sum(self.logpdf(x0=to_array(x0), xt=to_array(xt), dt=dt))
 
     def step(
         self, x0: Array, dt: float, random_state: RandomState = None

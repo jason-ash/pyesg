@@ -48,7 +48,7 @@ class HestonProcess(JointStochasticProcess):
         )
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
-        # floor volatility at zero
+        # floor volatility at zero before continuing (truncation method)
         vol = max(0.0, x0[1] ** 0.5)
 
         out = np.zeros_like(x0)

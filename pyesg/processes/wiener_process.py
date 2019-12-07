@@ -1,9 +1,9 @@
 """Wiener Process"""
-from typing import Dict
+from typing import Dict, List, Union
 import numpy as np
 
 from pyesg.processes import JointStochasticProcess, StochasticProcess
-from pyesg.utils import to_array, Array
+from pyesg.utils import to_array
 
 
 class WienerProcess(StochasticProcess):
@@ -14,7 +14,7 @@ class WienerProcess(StochasticProcess):
     --------
     >>> wp = WienerProcess(mu=0.05, sigma=0.2)
     >>> wp
-    <pyesg.WienerProcess{'mu': array([0.05]), 'sigma': array([0.2])}>
+    <pyesg.WienerProcess{'mu': 0.05, 'sigma': 0.2}>
     >>> wp.drift(x0=0.0)
     array([0.05])
     >>> wp.diffusion(x0=0.0)
@@ -31,19 +31,19 @@ class WienerProcess(StochasticProcess):
 
     def __init__(self, mu: float, sigma: float) -> None:
         super().__init__()
-        self.mu = to_array(mu)
-        self.sigma = to_array(sigma)
+        self.mu = mu
+        self.sigma = sigma
 
     def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # drift of a Wiener process does not depend on x0
-        return self.mu
+        return to_array(self.mu)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion of a Wiener process does not depend on x0
-        return self.sigma
+        return to_array(self.sigma)
 
 
 class JointWienerProcess(JointStochasticProcess):
@@ -72,7 +72,12 @@ class JointWienerProcess(JointStochasticProcess):
     array([1.14934283, 1.10083636])
     """
 
-    def __init__(self, mu: Array, sigma: Array, correlation: np.ndarray) -> None:
+    def __init__(
+        self,
+        mu: Union[List[float], List[int], np.ndarray],
+        sigma: Union[List[float], List[int], np.ndarray],
+        correlation: Union[List[float], np.ndarray],
+    ) -> None:
         super().__init__()
         self.mu = to_array(mu)
         self.sigma = to_array(sigma)
@@ -82,7 +87,7 @@ class JointWienerProcess(JointStochasticProcess):
         return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
-        # for this joint process, mu is already an array of expected returns
+        # mu is already an array of expected returns; it doesn't depend on x0
         return self.mu
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
