@@ -18,7 +18,6 @@ class AcademyRateProcess(JointStochasticProcess):
     Examples
     --------
     >>> arp = AcademyRateProcess()
-    >>> arp
     >>> arp.correlation
     array([[ 1.     , -0.19197,  0.     ],
            [-0.19197,  1.     ,  0.     ],
