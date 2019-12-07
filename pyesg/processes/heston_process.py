@@ -36,7 +36,11 @@ class HestonProcess(JointStochasticProcess):
         self.kappa = kappa
         self.sigma = sigma
         self.rho = rho
-        self.correlation = np.array([[1.0, rho], [rho, 1.0]])
+
+    @property
+    def correlation(self) -> np.ndarray:
+        """Returns the correlation matrix of the processes"""
+        return np.array([[1.0, self.rho], [self.rho, 1.0]])
 
     def coefs(self) -> Dict[str, float]:
         return dict(
