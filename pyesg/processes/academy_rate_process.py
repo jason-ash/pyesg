@@ -13,7 +13,37 @@ from pyesg.stochastic_process import JointStochasticProcess
 
 class AcademyRateProcess(JointStochasticProcess):
     """
-    American Academy of Actuaries stochastic log volatility process
+    American Academy of Actuaries stochastic log volatility process. Models three linked
+    processes:
+        1 : log-long-term-rate
+        2 : nominal spread between long-term rate and short-term rate
+        3 : log-monthly-volatility of the log-long-rate process
+
+    NOTE : most parameters provided as defaults are _monthly_ parameters, not _annual_
+        parameters; to keep consistent with the Academy Excel workbook, these values are
+        kept as the monthly defaults. Internally, the model converts them to annual
+        values. The Excel workbook is scaled to monthly timesteps, whereas this model is
+        scaled to annual timesteps. We can replicate the Excel results here by calling
+        `dt=1./12` to get monthly output steps.
+
+    Parameters
+    ----------
+    beta1 : float, default 0.00509, reversion strength for long-rate process
+    beta2 : float, default 0.02685, reversion strength for spread process
+    beta3 : float, default 0.04001, reversion strength for volatility process
+    rho12 : float, default -0.19197, correlation between long-rate & spread
+    rho13 : float, default 0.0, correlation between long-rate & volatility
+    rho23 : float, default 0.0, correlation between spread & volatility
+    sigma2 : float, default 0.04148, volatility of the spread process
+    sigma3 : float, default 0.11489, volatility of the volatility process
+    tau1 : float, default 0.035, mean reversion value for long-rate process
+    tau2 : float, default 0.01, mean reversion value for spread process
+    tau3 : float, default 0.0287, mean reversion value for volatility process
+    theta : float, default 1.0, spread volatility factor exponent
+    phi : float, default 0.0002, spread tilting parameter
+    psi : float, default 0.25164, steepness adjustment
+    long_rate_max : float, default 0.18, soft cap of the long rate before perturbing
+    long_rate_min : float, default 0.0115, soft floor of the long rate before perturbing
 
     Examples
     --------
@@ -23,16 +53,18 @@ class AcademyRateProcess(JointStochasticProcess):
            [-0.19197,  1.     ,  0.     ],
            [ 0.     ,  0.     ,  1.     ]])
     >>> arp.drift(x0=[np.log(0.0287), 0.0024, np.log(0.0287)])
-    array([0.00292258, 0.00016437, 0.        ])
+    array([0.03507095, 0.00197244, 0.        ])
     >>> arp.diffusion(x0=[np.log(0.0287), 0.0024, np.log(0.0287)])
+    array([[ 0.09941972,  0.        ,  0.        ],
+           [-0.00079167,  0.00404723,  0.        ],
+           [ 0.        ,  0.        ,  0.39799063]])
+    >>> arp.expectation(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=1./12)
+    array([-3.54793558e+00,  2.56436981e-03, -3.55085816e+00])
+    >>> arp.standard_deviation(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=1./12)
     array([[ 0.0287    ,  0.        ,  0.        ],
            [-0.00022854,  0.00116833,  0.        ],
            [ 0.        ,  0.        ,  0.11489   ]])
-    >>> arp.standard_deviation(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=0.25)
-    array([[ 0.01435   ,  0.        ,  0.        ],
-           [-0.00011427,  0.00058417,  0.        ],
-           [ 0.        ,  0.        ,  0.057445  ]])
-    >>> arp.step(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=1.0, random_state=42)
+    >>> arp.step(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=1./12, random_state=42)
     array([-3.53367988e+00,  2.28931401e-03, -3.47644522e+00])
     """
 
@@ -57,20 +89,20 @@ class AcademyRateProcess(JointStochasticProcess):
         long_rate_min: float = 0.0115,  # soft floor of the long rate before perturbing
     ) -> None:
         super().__init__()
-        self.beta1 = beta1
-        self.beta2 = beta2
-        self.beta3 = beta3
+        self.beta1 = beta1 * 12  # annualize the monthly-based parameter
+        self.beta2 = beta2 * 12  # annualize the monthly-based parameter
+        self.beta3 = beta3 * 12  # annualize the monthly-based parameter
         self.rho12 = rho12
         self.rho13 = rho13
         self.rho23 = rho23
-        self.sigma2 = sigma2
-        self.sigma3 = sigma3
+        self.sigma2 = sigma2 * 12 ** 0.5  # annualize the monthly-based parameter
+        self.sigma3 = sigma3 * 12 ** 0.5  # annualize the monthly-based parameter
         self.tau1 = tau1
         self.tau2 = tau2
         self.tau3 = tau3
         self.theta = theta
-        self.phi = phi
-        self.psi = psi
+        self.phi = phi * 12  # annualize the monthly-based parameter
+        self.psi = psi * 12  # annualize the monthly-based parameter
         self.long_rate_max = long_rate_max
         self.long_rate_min = long_rate_min
 
@@ -131,7 +163,11 @@ class AcademyRateProcess(JointStochasticProcess):
         # x0 is an array of [log-long-rate, spread, log-volatility]
         cholesky = np.linalg.cholesky(self.correlation)
         volatility = np.diag(
-            [np.exp(x0[2]), self.sigma2 * np.exp(x0[0]) ** self.theta, self.sigma3]
+            [
+                np.exp(x0[2]) * 12 ** 0.5,  # annualize the monthly-based parameter
+                self.sigma2 * np.exp(x0[0]) ** self.theta,
+                self.sigma3,
+            ]
         )
         return volatility @ cholesky
 
