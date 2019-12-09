@@ -8,7 +8,7 @@ https://www.actuary.org/sites/default/files/pdf/life/lbrc_dec08.pdf, page 8
 from typing import Dict
 import numpy as np
 
-from pyesg.processes import JointStochasticProcess
+from pyesg.stochastic_process import JointStochasticProcess
 
 
 class AcademyRateProcess(JointStochasticProcess):
