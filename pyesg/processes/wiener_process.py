@@ -37,6 +37,10 @@ class WienerProcess(StochasticProcess):
     def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
+    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+        # arithmetic addition to update x0
+        return x0 + dx
+
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # drift of a Wiener process does not depend on x0
         return to_array(self.mu)
@@ -85,6 +89,10 @@ class JointWienerProcess(JointStochasticProcess):
 
     def coefs(self) -> Dict[str, np.ndarray]:
         return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
+
+    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+        # arithmetic addition to update x0
+        return x0 + dx
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # mu is already an array of expected returns; it doesn't depend on x0

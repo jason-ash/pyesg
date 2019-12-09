@@ -37,6 +37,10 @@ class StochasticProcess(ABC):
         """Returns the diffusion component of the stochastic process"""
 
     @abstractmethod
+    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+        """Returns a new array of x-values, given a starting array and change vector"""
+
+    @abstractmethod
     def coefs(self) -> Dict[str, np.ndarray]:
         """Returns a dictionary of the process coefficients"""
 
@@ -53,7 +57,7 @@ class StochasticProcess(ABC):
         Returns the expected value of the stochastic process using the Euler
         Discretization method
         """
-        return to_array(x0) + self.drift(x0=x0) * dt
+        return self.apply(to_array(x0), self.drift(x0=x0) * dt)
 
     def standard_deviation(self, x0: Array, dt: float) -> np.ndarray:
         """
@@ -94,8 +98,8 @@ class StochasticProcess(ABC):
         """
         x0 = to_array(x0)
         rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
-        return to_array(
-            self.expectation(x0=x0, dt=dt) + rvs * self.standard_deviation(x0=x0, dt=dt)
+        return self.apply(
+            self.expectation(x0=x0, dt=dt), rvs * self.standard_deviation(x0=x0, dt=dt)
         )
 
 

@@ -137,6 +137,10 @@ class AcademyRateProcess(JointStochasticProcess):
             long_rate_min=self.long_rate_min,
         )
 
+    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+        # arithmetic addition to update x0
+        return x0 + dx
+
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # x0 is an array of [log-long-rate, nominal spread, log-volatility]
         # create a new array to store the output, then simultaneously update all terms
