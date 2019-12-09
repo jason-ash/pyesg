@@ -1,10 +1,12 @@
 """Useful functions"""
-from typing import List, Union
+from typing import List, Union, Tuple
 import numpy as np
 
 
 # typing aliases
-Array = Union[float, int, List[float], List[int], np.ndarray]
+Array = Union[
+    float, int, List[float], List[int], Tuple[float, ...], Tuple[int, ...], np.ndarray
+]
 RandomState = Union[int, np.random.RandomState, None]
 
 
@@ -37,8 +39,8 @@ def to_array(value: Array) -> np.ndarray:
 
     Parameters
     ----------
-    x0 : float, int, List[float], List[int], np.ndarray, an "array" of initial
-        values to pass into one of the process methods
+    x0 : float, int, List[float], List[int], Tuple[float], Tuple[int], np.ndarray, an
+        "array" of initial values to pass into one of the process methods
 
     Returns
     -------
@@ -60,6 +62,10 @@ def to_array(value: Array) -> np.ndarray:
     array([15., 16.])
     >>> to_array([10, 11.5])
     array([10. , 11.5])
+    >>> to_array((5))
+    array([5.])
+    >>> to_array((10, 11.5))
+    array([10. , 11.5])
     >>> to_array(np.array([10, 12]))
     array([10., 12.])
     >>> to_array(np.array(5))
@@ -72,7 +78,7 @@ def to_array(value: Array) -> np.ndarray:
     """
     if isinstance(value, (int, float)):
         return np.array([value], dtype=np.float64)
-    if isinstance(value, list):
+    if isinstance(value, (list, tuple)):
         return np.array(value, dtype=np.float64)
     if isinstance(value, np.ndarray):
         if value.shape == ():
