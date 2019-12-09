@@ -1,5 +1,5 @@
 """
-American Academy of Actuaries stochastic log volatility process
+American Academy of Actuaries stochastic log volatility interest rate process
 
 References
 ----------
