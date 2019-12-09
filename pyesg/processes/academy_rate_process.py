@@ -15,6 +15,25 @@ class AcademyRateProcess(JointStochasticProcess):
     """
     American Academy of Actuaries stochastic log volatility process
 
+    Parameters
+    ----------
+    beta1 : float, default 0.00509, reversion strength for long-rate process
+    beta2 : float, default 0.02685, reversion strength for spread process
+    beta3 : float, default 0.04001, reversion strength for volatility process
+    rho12 : float, default -0.19197, correlation between long-rate & spread
+    rho13 : float, default 0.0, correlation between long-rate & volatility
+    rho23 : float, default 0.0, correlation between spread & volatility
+    sigma2 : float, default 0.04148, volatility of the spread process
+    sigma3 : float, default 0.11489, volatility of the volatility process
+    tau1 : float, default 0.035, mean reversion value for long-rate process
+    tau2 : float, default 0.01, mean reversion value for spread process
+    tau3 : float, default 0.0287, mean reversion value for volatility process
+    theta : float, default 1.0, spread volatility factor exponent
+    phi : float, default 0.0002, spread tilting parameter
+    psi : float, default 0.25164, steepness adjustment
+    long_rate_max : float, default 0.18, soft cap of the long rate before perturbing
+    long_rate_min : float, default 0.0115, soft floor of the long rate before perturbing
+
     Examples
     --------
     >>> arp = AcademyRateProcess()
