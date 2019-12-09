@@ -2,7 +2,7 @@
 from typing import Dict, List, Union
 import numpy as np
 
-from pyesg.processes import JointStochasticProcess, StochasticProcess
+from pyesg.stochastic_process import JointStochasticProcess, StochasticProcess
 from pyesg.utils import to_array
 
 

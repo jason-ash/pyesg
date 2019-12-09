@@ -2,7 +2,7 @@
 from typing import Dict
 import numpy as np
 
-from pyesg.processes import JointStochasticProcess
+from pyesg.stochastic_process import JointStochasticProcess
 
 
 class HestonProcess(JointStochasticProcess):

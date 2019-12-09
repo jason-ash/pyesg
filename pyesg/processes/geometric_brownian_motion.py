@@ -2,7 +2,7 @@
 from typing import Dict
 import numpy as np
 
-from pyesg.processes import StochasticProcess
+from pyesg.stochastic_process import StochasticProcess
 
 
 class GeometricBrownianMotion(StochasticProcess):
