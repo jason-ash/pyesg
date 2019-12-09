@@ -13,7 +13,18 @@ from pyesg.stochastic_process import JointStochasticProcess
 
 class AcademyRateProcess(JointStochasticProcess):
     """
-    American Academy of Actuaries stochastic log volatility process
+    American Academy of Actuaries stochastic log volatility process. Models three linked
+    processes:
+        1 : log-long-term-rate
+        2 : nominal spread between long-term rate and short-term rate
+        3 : log-monthly-volatility of the log-long-rate process
+
+    NOTE : most parameters provided as defaults are _monthly_ parameters, not _annual_
+        parameters; to keep consistent with the Academy Excel workbook, these values are
+        kept as the monthly defaults. Internally, the model converts them to annual
+        values. The Excel workbook is scaled to monthly timesteps, whereas this model is
+        scaled to annual timesteps. We can replicate the Excel results here by calling
+        `dt=1./12` to get monthly output steps.
 
     Parameters
     ----------
@@ -153,7 +164,7 @@ class AcademyRateProcess(JointStochasticProcess):
         cholesky = np.linalg.cholesky(self.correlation)
         volatility = np.diag(
             [
-                np.exp(x0[2]) * 12 ** 0.5,  # annualize the log-volatility
+                np.exp(x0[2]) * 12 ** 0.5,  # annualize the monthly-based parameter
                 self.sigma2 * np.exp(x0[0]) ** self.theta,
                 self.sigma3,
             ]
