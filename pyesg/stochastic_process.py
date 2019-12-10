@@ -10,7 +10,20 @@ from pyesg.utils import check_random_state, to_array, Array, RandomState
 
 class StochasticProcess(ABC):
     """
-    Abstract base class for a stochastic diffusion process
+    Abstract base class for a stochastic diffusion process. Cannot be instantiated
+    itself. Instead, subclasses should define four methods:
+        1. _drift : the drift component of the diffusion process; determines how much
+            the process will move in the absence of any stochastic component
+        2. _diffusion : the stochastic component of the diffusion process; determines
+            how large the perturbations of the process will be
+        3. _apply : instructions for how to update an initial value(s), given a vector
+            of changes; e.g. addition or exponentiation
+        4. coefs : a convenience method that stores all model coefficients in a dict so
+            they can be referenced easily as a group
+
+    Given these methods above, the base class provides methods for expected value of the
+    process, standard deviation, and a transition density (if applicable). Also provides
+    a method, "step", that iterates an initial vector of parameters one step forward.
 
     Parameters
     ----------
@@ -107,7 +120,9 @@ class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-met
     """
     Abstract base class for a joint stochastic diffusion process: a process that
     comprises at least two correlated stochastic processes whose values may or may not
-    depend on one another
+    depend on one another. This base class inherits most of its functionality from the
+    StochasticProcess abstract class, and only slightly modifies the "step" method to
+    handle correlation between the processes.
 
     Parameters
     ----------
