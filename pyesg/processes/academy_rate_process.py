@@ -15,9 +15,9 @@ class AcademyRateProcess(JointStochasticProcess):
     """
     American Academy of Actuaries stochastic log volatility process. Models three linked
     processes:
-        1 : long-term-rate : (internally modeled as a process on the log-rate)
-        2 : nominal spread between long-term rate and short-term rate
-        3 : monthly-volatility of the long-rate process (internally modeled as log-vol)
+        1. long-term-rate (internally modeled as a process on the log-rate)
+        2. nominal spread between long-term rate and short-term rate
+        3. monthly-volatility of the long-rate process (internally modeled as log-vol)
 
     NOTE : most parameters provided as defaults are _monthly_ parameters, not _annual_
         parameters; to keep consistent with the Academy Excel workbook, these values are
