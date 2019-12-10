@@ -15,7 +15,7 @@ class AcademyRateProcess(JointStochasticProcess):
     """
     American Academy of Actuaries stochastic log volatility process. Models three linked
     processes:
-        1 : long-term-rate (internally modeled as a process on the log-rate)
+        1 : long-term-rate : (internally modeled as a process on the log-rate)
         2 : nominal spread between long-term rate and short-term rate
         3 : monthly-volatility of the long-rate process (internally modeled as log-vol)
 
@@ -66,6 +66,10 @@ class AcademyRateProcess(JointStochasticProcess):
            [ 0.        ,  0.        ,  0.11489   ]])
     >>> arp.step(x0=[0.0287, 0.0024, 0.03], dt=1./12, random_state=42)
     array([0.02921614, 0.00228931, 0.03226032])
+
+    References
+    ----------
+    https://www.actuary.org/sites/default/files/pdf/life/lbrc_dec08.pdf, page 8
     """
 
     # pylint: disable=too-many-arguments,too-many-instance-attributes,too-many-locals
@@ -152,13 +156,31 @@ class AcademyRateProcess(JointStochasticProcess):
         # create a new array to store the output, then simultaneously update all terms
         out = x0.copy()
 
-        # updating log-volatility
+        # --volatility of the long-rate process--
+        # internally we model the monthly-log-volatility of the long-rate process; this
+        # variable follows an ornstein-uhlenbeck process with mean reversion parameter
+        # tau3, and mean reversion speed beta3. Because we are modeling log-volatiliy,
+        # we take the log of tau3 and the initial volatility level, x0[2]. This class's
+        # "apply" method will use exponentiation to update the value of volatility,
+        # so the output of the model is "converted" back to non-log volatility.
         out[2] = self.beta3 * np.log(self.tau3 / x0[2])
 
-        # updating spread
+        # --spread between long-rate and short-rate--
+        # the spread follows an ornstein-uhlenbeck process with mean reversion parameter
+        # tau2 and mean reversion speed beta2. We model nominal spread, so the effect is
+        # additive to the original level of the spread. We also add a component based on
+        # the level of the log-long-rate compared to its mean reversion rate, tau1. This
+        # is multiplied by a factor, phi, and added to the drift component of the spread
         out[1] = self.beta2 * (self.tau2 - x0[1]) + self.phi * np.log(x0[0] / self.tau1)
 
-        # expectation for the log-long-term rate
+        # --long-term interest rate--
+        # internally we model the log-long-term rate as an ornstein-uhlenbeck process
+        # with mean reversion level tau1 and mean reversion speed beta1. We also add an
+        # effect based on the level of the spread relative to its long term mean times a
+        # factor, psi. Before we calculate the drift we set upper and lower bounds on
+        # the long term rate so it falls within a certain range. This range may be
+        # exceeded based on the random perturbations that are added later, which is ok.
+        # Similar to volatility, we apply the changes here using exponentiation.
         out[0] = self.beta1 * np.log(self.tau1 / x0[0]) + self.psi * (self.tau2 - x0[1])
         out[0] = min(self.long_rate_max - x0[0], out[0])
         out[0] = max(self.long_rate_min - x0[0], out[0])
@@ -168,14 +190,28 @@ class AcademyRateProcess(JointStochasticProcess):
         # diffusion is the covariance diagonal times the cholesky correlation matrix
         # x0 is an array of [long-rate, spread, volatility]
         cholesky = np.linalg.cholesky(self.correlation)
-        volatility = np.diag(
-            [
-                x0[2] * 12 ** 0.5,  # annualize the monthly-based parameter
-                self.sigma2 * x0[0] ** self.theta,
-                self.sigma3,
-            ]
-        )
-        return volatility @ cholesky
+
+        # volatility matrix starts as a copy of the initial array; we'll update below
+        volatility = x0.copy()
+
+        # --volatility of the long-rate process--
+        # this is just the value of sigma3 - the volatility of the volatility parameter
+        volatility[2] = self.sigma3
+
+        # --spread between long-rate and short-rate--
+        # this volatility follows a generalized ornstein-uhlenbeck process with an extra
+        # factor of multiplying by the long rate raised to a power of theta
+        volatility[1] = self.sigma2 * x0[0] ** self.theta
+
+        # --long-term interest rate--
+        # here we use the volatility value calculated by the third stochastic process.
+        # however, because that volatility process models *monthly* volatility, we need
+        # to scale it to be *annual* volatility, so we multiply by sqrt(12)
+        volatility[0] = x0[2] * 12 ** 0.5
+
+        # finally, we output the matrix product of volatility (as a diagonal matrix)
+        # with the cholesky decomposition of the correlation matrix.
+        return np.diag(volatility) @ cholesky
 
 
 if __name__ == "__main__":
