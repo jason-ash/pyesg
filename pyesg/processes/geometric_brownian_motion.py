@@ -38,6 +38,10 @@ class GeometricBrownianMotion(StochasticProcess):
     def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
+    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+        # arithmetic addition to update x0
+        return x0 + dx
+
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         return self.mu * x0
 
