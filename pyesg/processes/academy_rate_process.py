@@ -52,20 +52,20 @@ class AcademyRateProcess(JointStochasticProcess):
     array([[ 1.     , -0.19197,  0.     ],
            [-0.19197,  1.     ,  0.     ],
            [ 0.     ,  0.     ,  1.     ]])
-    >>> arp.drift(x0=[np.log(0.0287), 0.0024, np.log(0.0287)])
-    array([0.03507095, 0.00197244, 0.        ])
-    >>> arp.diffusion(x0=[np.log(0.0287), 0.0024, np.log(0.0287)])
-    array([[ 0.09941972,  0.        ,  0.        ],
+    >>> arp.drift(x0=[np.log(0.0287), 0.0024, np.log(0.03)])
+    array([ 0.03507095,  0.00197244, -0.02126944])
+    >>> arp.diffusion(x0=[np.log(0.0287), 0.0024, np.log(0.03)])
+    array([[ 0.10392305,  0.        ,  0.        ],
            [-0.00079167,  0.00404723,  0.        ],
            [ 0.        ,  0.        ,  0.39799063]])
-    >>> arp.expectation(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=1./12)
-    array([-3.54793558e+00,  2.56436981e-03, -3.55085816e+00])
-    >>> arp.standard_deviation(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=1./12)
-    array([[ 0.0287    ,  0.        ,  0.        ],
+    >>> arp.expectation(x0=[np.log(0.0287), 0.0024, np.log(0.03)], dt=1./12)
+    array([-3.54793558e+00,  2.56436981e-03, -3.50833035e+00])
+    >>> arp.standard_deviation(x0=[np.log(0.0287), 0.0024, np.log(0.03)], dt=1./12)
+    array([[ 0.03      ,  0.        ,  0.        ],
            [-0.00022854,  0.00116833,  0.        ],
            [ 0.        ,  0.        ,  0.11489   ]])
-    >>> arp.step(x0=[np.log(0.0287), 0.0024, np.log(0.0287)], dt=1./12, random_state=42)
-    array([-3.53367988e+00,  2.28931401e-03, -3.47644522e+00])
+    >>> arp.step(x0=[np.log(0.0287), 0.0024, np.log(0.03)], dt=1./12, random_state=42)
+    array([-3.53303415e+00,  2.28931401e-03, -3.43391741e+00])
     """
 
     # pylint: disable=too-many-arguments,too-many-instance-attributes,too-many-locals
