@@ -52,20 +52,20 @@ class AcademyRateProcess(JointStochasticProcess):
     array([[ 1.     , -0.19197,  0.     ],
            [-0.19197,  1.     ,  0.     ],
            [ 0.     ,  0.     ,  1.     ]])
-    >>> arp.drift(x0=[np.log(0.0287), 0.0024, np.log(0.03)])
+    >>> arp.drift(x0=[np.log(0.0287), 0.0024, 0.03])
     array([ 0.03507095,  0.00197244, -0.02126944])
-    >>> arp.diffusion(x0=[np.log(0.0287), 0.0024, np.log(0.03)])
+    >>> arp.diffusion(x0=[np.log(0.0287), 0.0024, 0.03])
     array([[ 0.10392305,  0.        ,  0.        ],
            [-0.00079167,  0.00404723,  0.        ],
            [ 0.        ,  0.        ,  0.39799063]])
-    >>> arp.expectation(x0=[np.log(0.0287), 0.0024, np.log(0.03)], dt=1./12)
-    array([-3.54793558e+00,  2.56436981e-03, -3.50833035e+00])
-    >>> arp.standard_deviation(x0=[np.log(0.0287), 0.0024, np.log(0.03)], dt=1./12)
+    >>> arp.expectation(x0=[np.log(0.0287), 0.0024, 0.03], dt=1./12)
+    array([-3.54793558e+00,  2.56436981e-03,  2.99468735e-02])
+    >>> arp.standard_deviation(x0=[np.log(0.0287), 0.0024, 0.03], dt=1./12)
     array([[ 0.03      ,  0.        ,  0.        ],
            [-0.00022854,  0.00116833,  0.        ],
            [ 0.        ,  0.        ,  0.11489   ]])
-    >>> arp.step(x0=[np.log(0.0287), 0.0024, np.log(0.03)], dt=1./12, random_state=42)
-    array([-3.53303415e+00,  2.28931401e-03, -3.43391741e+00])
+    >>> arp.step(x0=[np.log(0.0287), 0.0024, 0.03], dt=1./12, random_state=42)
+    array([-3.53303415e+00,  2.28931401e-03,  3.22603159e-02])
     """
 
     # pylint: disable=too-many-arguments,too-many-instance-attributes,too-many-locals
@@ -142,16 +142,16 @@ class AcademyRateProcess(JointStochasticProcess):
         out = x0.copy()
         out[0] = x0[0] + dx[0]
         out[1] = x0[1] + dx[1]
-        out[2] = x0[2] + dx[2]
+        out[2] = x0[2] * np.exp(dx[2])
         return out
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
-        # x0 is an array of [log-long-rate, nominal spread, log-volatility]
+        # x0 is an array of [log-long-rate, nominal spread, volatility]
         # create a new array to store the output, then simultaneously update all terms
         out = x0.copy()
 
         # updating log-volatility
-        out[2] = self.beta3 * (np.log(self.tau3) - x0[2])
+        out[2] = self.beta3 * np.log(self.tau3 / x0[2])
 
         # updating spread
         out[1] = self.beta2 * (self.tau2 - x0[1]) + self.phi * (
@@ -168,11 +168,11 @@ class AcademyRateProcess(JointStochasticProcess):
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion is the covariance diagonal times the cholesky correlation matrix
-        # x0 is an array of [log-long-rate, spread, log-volatility]
+        # x0 is an array of [log-long-rate, spread, volatility]
         cholesky = np.linalg.cholesky(self.correlation)
         volatility = np.diag(
             [
-                np.exp(x0[2]) * 12 ** 0.5,  # annualize the monthly-based parameter
+                x0[2] * 12 ** 0.5,  # annualize the monthly-based parameter
                 self.sigma2 * np.exp(x0[0]) ** self.theta,
                 self.sigma3,
             ]

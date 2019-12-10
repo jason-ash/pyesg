@@ -131,7 +131,7 @@ class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-met
         rvs = self.dW.rvs(
             size=x0[None, :].shape, random_state=check_random_state(random_state)
         )
-        return (
-            self.expectation(x0=x0, dt=dt)
-            + (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze()
+        return self.apply(
+            self.expectation(x0=x0, dt=dt),
+            (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze(),
         )
