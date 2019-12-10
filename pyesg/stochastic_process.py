@@ -120,7 +120,7 @@ class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-met
     """
     Abstract base class for a joint stochastic diffusion process: a process that
     comprises at least two correlated stochastic processes whose values may or may not
-    depend on one another. This base class borrows most of its functionality from the
+    depend on one another. This base class inherits most of its functionality from the
     StochasticProcess abstract class, and only slightly modifies the "step" method to
     handle correlation between the processes.
 
