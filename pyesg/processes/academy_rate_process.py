@@ -139,7 +139,11 @@ class AcademyRateProcess(JointStochasticProcess):
 
     def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
-        return x0 + dx
+        out = x0.copy()
+        out[0] = x0[0] + dx[0]
+        out[1] = x0[1] + dx[1]
+        out[2] = x0[2] + dx[2]
+        return out
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # x0 is an array of [log-long-rate, nominal spread, log-volatility]
@@ -159,7 +163,7 @@ class AcademyRateProcess(JointStochasticProcess):
             self.tau2 - x0[1]
         )
         out[0] = min(np.log(self.long_rate_max) - x0[0], out[0])
-        x0[0] = max(np.log(self.long_rate_min) - x0[0], out[0])
+        out[0] = max(np.log(self.long_rate_min) - x0[0], out[0])
         return out
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
