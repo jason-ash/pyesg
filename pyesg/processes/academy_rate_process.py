@@ -138,7 +138,9 @@ class AcademyRateProcess(JointStochasticProcess):
         )
 
     def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
-        # arithmetic addition to update x0
+        # long-rate (x0[0]) is modeled internally as a log process, so we use exp
+        # spread (x0[1]) is an arithmetic process
+        # volatility (x0[2]) is modeled internally as a log-process, so we use exp
         out = x0.copy()
         out[0] = x0[0] * np.exp(dx[0])
         out[1] = x0[1] + dx[1]
