@@ -182,8 +182,8 @@ class AcademyRateProcess(JointStochasticProcess):
         # exceeded based on the random perturbations that are added later, which is ok.
         # Similar to volatility, we apply the changes here using exponentiation.
         out[0] = self.beta1 * np.log(self.tau1 / x0[0]) + self.psi * (self.tau2 - x0[1])
-        out[0] = min(self.long_rate_max - x0[0], out[0])
-        out[0] = max(self.long_rate_min - x0[0], out[0])
+        out[0] = min(np.log(self.long_rate_max / x0[0]), out[0])
+        out[0] = max(np.log(self.long_rate_min / x0[0]), out[0])
         return out
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
