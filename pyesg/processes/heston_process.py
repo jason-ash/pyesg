@@ -51,7 +51,7 @@ class HestonProcess(JointStochasticProcess):
             rho=self.rho,
         )
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
         return x0 + dx
 

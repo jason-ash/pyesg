@@ -25,8 +25,8 @@ class WienerProcess(StochasticProcess):
     array([0.14142136])
     >>> wp.step(x0=0.0, dt=1.0, random_state=42)
     array([0.14934283])
-    >>> wp.step(x0=np.array([0.0, 1.0, 2.0]), dt=1.0, random_state=42)
-    array([0.14934283, 1.02234714, 2.17953771])
+    >>> wp.step(x0=np.array([1.0]), dt=1.0, random_state=42)
+    array([1.14934283])
     """
 
     def __init__(self, mu: float, sigma: float) -> None:
@@ -37,7 +37,7 @@ class WienerProcess(StochasticProcess):
     def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
         return x0 + dx
 
@@ -90,7 +90,7 @@ class JointWienerProcess(JointStochasticProcess):
     def coefs(self) -> Dict[str, np.ndarray]:
         return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
         return x0 + dx
 

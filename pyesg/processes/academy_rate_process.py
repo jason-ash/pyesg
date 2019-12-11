@@ -141,7 +141,7 @@ class AcademyRateProcess(JointStochasticProcess):
             long_rate_min=self.long_rate_min,
         )
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # long-rate (x0[0]) is modeled internally as a log process, so we use exp
         # spread (x0[1]) is an arithmetic process
         # volatility (x0[2]) is modeled internally as a log-process, so we use exp

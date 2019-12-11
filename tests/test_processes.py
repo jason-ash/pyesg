@@ -50,8 +50,6 @@ class TestWienerProcess(unittest.TestCase):
         self.assertEqual(steps.shape, (1,))
         steps = model.step(x0=np.array([0.05]), dt=1.0, random_state=None)
         self.assertEqual(steps.shape, (1,))
-        steps = model.step(x0=np.full(10, 0.05), dt=1.0, random_state=None)
-        self.assertEqual(steps.shape, (10,))
 
 
 class TestAcademyRateProcess(unittest.TestCase):
