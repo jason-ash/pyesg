@@ -2,7 +2,7 @@
 from typing import Dict, List, Union
 import numpy as np
 
-from pyesg.stochastic_process import JointStochasticProcess, StochasticProcess
+from pyesg.stochastic_process import StochasticProcess
 from pyesg.utils import to_array
 
 
@@ -50,7 +50,7 @@ class WienerProcess(StochasticProcess):
         return to_array(self.sigma)
 
 
-class JointWienerProcess(JointStochasticProcess):
+class JointWienerProcess(StochasticProcess):
     """
     Joint Wiener processes: dX = μdt + σdW
 
@@ -82,7 +82,7 @@ class JointWienerProcess(JointStochasticProcess):
         sigma: Union[List[float], List[int], np.ndarray],
         correlation: Union[List[float], np.ndarray],
     ) -> None:
-        super().__init__()
+        super().__init__(dim=len(mu))
         self.mu = to_array(mu)
         self.sigma = to_array(sigma)
         self.correlation = to_array(correlation)

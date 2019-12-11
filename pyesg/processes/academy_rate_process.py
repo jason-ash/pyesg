@@ -8,10 +8,10 @@ https://www.actuary.org/sites/default/files/pdf/life/lbrc_dec08.pdf, page 8
 from typing import Dict
 import numpy as np
 
-from pyesg.stochastic_process import JointStochasticProcess
+from pyesg.stochastic_process import StochasticProcess
 
 
-class AcademyRateProcess(JointStochasticProcess):
+class AcademyRateProcess(StochasticProcess):
     """
     American Academy of Actuaries stochastic log volatility process. Models three linked
     processes:
@@ -92,7 +92,7 @@ class AcademyRateProcess(JointStochasticProcess):
         long_rate_max: float = 0.18,  # soft cap of the long rate before perturbing
         long_rate_min: float = 0.0115,  # soft floor of the long rate before perturbing
     ) -> None:
-        super().__init__()
+        super().__init__(dim=3)
         self.beta1 = beta1 * 12  # annualize the monthly-based parameter
         self.beta2 = beta2 * 12  # annualize the monthly-based parameter
         self.beta3 = beta3 * 12  # annualize the monthly-based parameter

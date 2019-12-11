@@ -118,43 +118,16 @@ class StochasticProcess(ABC):
         Discretization method
         """
         x0 = to_array(x0)
+
+        # generate an array of independent draws from the dW distribution (defaults to a
+        # normal distribution.) In the general case, we can use matrix multiplication to
+        # combine the random draws with the StochasticProcess's standard deviation. This
+        # means that we can handle both single-dimensional and multi-dimensional
+        # stochastic processes with a single abstract base class. For joint stochastic
+        # processes, the standard deviation is a n x n matrix, where n is the dimension
+        # of the process, so we effectively convert the independent random draws into
+        # correlated random draws.
         rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
-        return self.apply(
-            self.expectation(x0=x0, dt=dt),
-            (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze(),
-        )
-
-
-class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-method
-    """
-    Abstract base class for a joint stochastic diffusion process: a process that
-    comprises at least two correlated stochastic processes whose values may or may not
-    depend on one another. This base class inherits most of its functionality from the
-    StochasticProcess abstract class, and only slightly modifies the "step" method to
-    handle correlation between the processes.
-
-    Parameters
-    ----------
-    correlation : np.ndarray, a square matrix of correlations among the stochastic
-        portions of the processes. Its shape must match the number of processes
-    dW : Scipy stats distribution object, default scipy.stats.norm. Specifies the
-        distribution from which samples should be drawn.
-    """
-
-    def __init__(self, dW: rv_continuous = stats.norm) -> None:
-        super().__init__(dW=dW)
-
-    def step(
-        self, x0: Array, dt: float, random_state: RandomState = None
-    ) -> np.ndarray:
-        """
-        Applies the stochastic process to an array of initial values using the Euler
-        Discretization method
-        """
-        x0 = to_array(x0)
-        rvs = self.dW.rvs(
-            size=x0[None, :].shape, random_state=check_random_state(random_state)
-        )
         return self.apply(
             self.expectation(x0=x0, dt=dt),
             (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze(),

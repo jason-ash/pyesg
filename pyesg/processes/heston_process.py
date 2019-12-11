@@ -2,10 +2,10 @@
 from typing import Dict
 import numpy as np
 
-from pyesg.stochastic_process import JointStochasticProcess
+from pyesg.stochastic_process import StochasticProcess
 
 
-class HestonProcess(JointStochasticProcess):
+class HestonProcess(StochasticProcess):
     """
     Heston stochastic volatility process
 
@@ -30,7 +30,7 @@ class HestonProcess(JointStochasticProcess):
     def __init__(
         self, mu: float, theta: float, kappa: float, sigma: float, rho: float
     ) -> None:
-        super().__init__()
+        super().__init__(dim=2)
         self.mu = mu
         self.theta = theta
         self.kappa = kappa
