@@ -63,7 +63,7 @@ class TestAcademyRateProcess(unittest.TestCase):
 
         # ensure the expectation is never higher than the long_rate_max
         x0 = np.array([0.2, 0.0024, 0.03])
-        self.assertLessEqual(arp.expectation(x0=x0, dt=1.0)[0], 0.018)
+        self.assertLessEqual(arp.expectation(x0=x0, dt=1.0)[0], 0.18)
 
         # ensure the expectatin is never lower than the long_rate_min
         x0 = np.array([0.005, 0.0024, 0.03])
