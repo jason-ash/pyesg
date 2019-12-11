@@ -61,7 +61,7 @@ class StochasticProcess(ABC):
     def coefs(self) -> Dict[str, np.ndarray]:
         """Returns a dictionary of the process coefficients"""
 
-    def apply(self, x0: Array, dx: np.ndarray) -> np.ndarray:
+    def apply(self, x0: Array, dx: Array) -> np.ndarray:
         """Returns a new array of x-values, given a starting array and change vector"""
         return self._apply(x0=to_array(x0), dx=to_array(dx))
 
