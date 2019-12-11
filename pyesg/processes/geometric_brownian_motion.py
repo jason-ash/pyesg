@@ -24,8 +24,8 @@ class GeometricBrownianMotion(StochasticProcess):
     array([0.14142136])
     >>> gbm.step(x0=1.0, dt=1.0, random_state=42)
     array([1.14934283])
-    >>> gbm.step(x0=[1.0, 15.0, 50.0], dt=1.0, random_state=42)
-    array([ 1.14934283, 15.3352071 , 58.97688538])
+    >>> gbm.step(x0=[1.0], dt=1.0, random_state=42)
+    array([1.14934283])
     >>> gbm.logpdf(x0=1.0, xt=1.1, dt=1.0)
     array([0.65924938])
     """
@@ -38,7 +38,7 @@ class GeometricBrownianMotion(StochasticProcess):
     def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
         return x0 + dx
 

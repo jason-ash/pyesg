@@ -10,8 +10,9 @@ from pyesg.utils import check_random_state, to_array, Array, RandomState
 
 class StochasticProcess(ABC):
     """
-    Abstract base class for a stochastic diffusion process. Cannot be instantiated
-    itself. Instead, subclasses should define four methods:
+    Abstract base class for a stochastic diffusion process. A stochastic processes can
+    model any number of underlying variables, where the number of variables is defined
+    by the "dim" attribute. Subclasses of StochasticProcess should define four methods:
         1. _drift : the drift component of the diffusion process; determines how much
             the process will move in the absence of any stochastic component
         2. _diffusion : the stochastic component of the diffusion process; determines
@@ -27,11 +28,14 @@ class StochasticProcess(ABC):
 
     Parameters
     ----------
+    dim : int, the dimension of the process; single-variable processes will have dim=1,
+        while joint processes can have dim>1
     dW : Scipy stats distribution object, default scipy.stats.norm. Specifies the
         distribution from which samples should be drawn.
     """
 
-    def __init__(self, dW: rv_continuous = stats.norm) -> None:
+    def __init__(self, dim: int = 1, dW: rv_continuous = stats.norm) -> None:
+        self.dim = dim
         self.dW = dW
 
     def __repr__(self) -> str:
@@ -42,6 +46,10 @@ class StochasticProcess(ABC):
         return all(self.coefs().values())
 
     @abstractmethod
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+        """Returns a new array of x-values, given a starting array and change vector"""
+
+    @abstractmethod
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         """Returns the drift component of the stochastic process"""
 
@@ -50,12 +58,12 @@ class StochasticProcess(ABC):
         """Returns the diffusion component of the stochastic process"""
 
     @abstractmethod
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
-        """Returns a new array of x-values, given a starting array and change vector"""
-
-    @abstractmethod
     def coefs(self) -> Dict[str, np.ndarray]:
         """Returns a dictionary of the process coefficients"""
+
+    def apply(self, x0: Array, dx: Array) -> np.ndarray:
+        """Returns a new array of x-values, given a starting array and change vector"""
+        return self._apply(x0=to_array(x0), dx=to_array(dx))
 
     def drift(self, x0: Array) -> np.ndarray:
         """Returns the drift component of the stochastic process"""
@@ -110,42 +118,16 @@ class StochasticProcess(ABC):
         Discretization method
         """
         x0 = to_array(x0)
+
+        # generate an array of independent draws from the dW distribution (defaults to a
+        # normal distribution.) In the general case, we can use matrix multiplication to
+        # combine the random draws with the StochasticProcess's standard deviation. This
+        # means that we can handle both single-dimensional and multi-dimensional
+        # stochastic processes with a single abstract base class. For joint stochastic
+        # processes, the standard deviation is a n x n matrix, where n is the dimension
+        # of the process, so we effectively convert the independent random draws into
+        # correlated random draws.
         rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
-        return self.apply(
-            self.expectation(x0=x0, dt=dt), rvs * self.standard_deviation(x0=x0, dt=dt)
-        )
-
-
-class JointStochasticProcess(StochasticProcess):  # pylint: disable=abstract-method
-    """
-    Abstract base class for a joint stochastic diffusion process: a process that
-    comprises at least two correlated stochastic processes whose values may or may not
-    depend on one another. This base class inherits most of its functionality from the
-    StochasticProcess abstract class, and only slightly modifies the "step" method to
-    handle correlation between the processes.
-
-    Parameters
-    ----------
-    correlation : np.ndarray, a square matrix of correlations among the stochastic
-        portions of the processes. Its shape must match the number of processes
-    dW : Scipy stats distribution object, default scipy.stats.norm. Specifies the
-        distribution from which samples should be drawn.
-    """
-
-    def __init__(self, dW: rv_continuous = stats.norm) -> None:
-        super().__init__(dW=dW)
-
-    def step(
-        self, x0: Array, dt: float, random_state: RandomState = None
-    ) -> np.ndarray:
-        """
-        Applies the stochastic process to an array of initial values using the Euler
-        Discretization method
-        """
-        x0 = to_array(x0)
-        rvs = self.dW.rvs(
-            size=x0[None, :].shape, random_state=check_random_state(random_state)
-        )
         return self.apply(
             self.expectation(x0=x0, dt=dt),
             (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze(),

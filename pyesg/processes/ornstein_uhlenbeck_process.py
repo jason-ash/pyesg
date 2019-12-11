@@ -36,7 +36,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
     def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma, theta=self.theta)
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
         return x0 + dx
 

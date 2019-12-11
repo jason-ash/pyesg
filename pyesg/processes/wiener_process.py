@@ -2,7 +2,7 @@
 from typing import Dict, List, Union
 import numpy as np
 
-from pyesg.stochastic_process import JointStochasticProcess, StochasticProcess
+from pyesg.stochastic_process import StochasticProcess
 from pyesg.utils import to_array
 
 
@@ -25,8 +25,8 @@ class WienerProcess(StochasticProcess):
     array([0.14142136])
     >>> wp.step(x0=0.0, dt=1.0, random_state=42)
     array([0.14934283])
-    >>> wp.step(x0=np.array([0.0, 1.0, 2.0]), dt=1.0, random_state=42)
-    array([0.14934283, 1.02234714, 2.17953771])
+    >>> wp.step(x0=np.array([1.0]), dt=1.0, random_state=42)
+    array([1.14934283])
     """
 
     def __init__(self, mu: float, sigma: float) -> None:
@@ -37,7 +37,7 @@ class WienerProcess(StochasticProcess):
     def coefs(self) -> Dict[str, float]:
         return dict(mu=self.mu, sigma=self.sigma)
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
         return x0 + dx
 
@@ -50,7 +50,7 @@ class WienerProcess(StochasticProcess):
         return to_array(self.sigma)
 
 
-class JointWienerProcess(JointStochasticProcess):
+class JointWienerProcess(StochasticProcess):
     """
     Joint Wiener processes: dX = μdt + σdW
 
@@ -82,7 +82,7 @@ class JointWienerProcess(JointStochasticProcess):
         sigma: Union[List[float], List[int], np.ndarray],
         correlation: Union[List[float], np.ndarray],
     ) -> None:
-        super().__init__()
+        super().__init__(dim=len(mu))
         self.mu = to_array(mu)
         self.sigma = to_array(sigma)
         self.correlation = to_array(correlation)
@@ -90,7 +90,7 @@ class JointWienerProcess(JointStochasticProcess):
     def coefs(self) -> Dict[str, np.ndarray]:
         return dict(mu=self.mu, sigma=self.sigma, correlation=self.correlation)
 
-    def apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
         # arithmetic addition to update x0
         return x0 + dx
 
