@@ -61,9 +61,9 @@ class StochasticProcess(ABC):
     def coefs(self) -> Dict[str, np.ndarray]:
         """Returns a dictionary of the process coefficients"""
 
-    def apply(self, x0: Array, dx: Array) -> np.ndarray:
+    def apply(self, x0: Array, dx: np.ndarray) -> np.ndarray:
         """Returns a new array of x-values, given a starting array and change vector"""
-        return self._apply(x0=to_array(x0), dx=to_array(dx))
+        return self._apply(x0=to_array(x0), dx=dx)
 
     def drift(self, x0: Array) -> np.ndarray:
         """Returns the drift component of the stochastic process"""
@@ -117,8 +117,6 @@ class StochasticProcess(ABC):
         Applies the stochastic process to an array of initial values using the Euler
         Discretization method
         """
-        x0 = to_array(x0)
-
         # generate an array of independent draws from the dW distribution (defaults to a
         # normal distribution.) In the general case, we can use matrix multiplication to
         # combine the random draws with the StochasticProcess's standard deviation. This
@@ -127,8 +125,44 @@ class StochasticProcess(ABC):
         # processes, the standard deviation is a n x n matrix, where n is the dimension
         # of the process, so we effectively convert the independent random draws into
         # correlated random draws.
+        x0 = to_array(x0)
         rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
-        return self.apply(
-            self.expectation(x0=x0, dt=dt),
-            (rvs @ self.standard_deviation(x0=x0, dt=dt).T).squeeze(),
-        )
+        dx = rvs @ self.standard_deviation(x0=x0, dt=dt).T
+        return self.apply(self.expectation(x0=x0, dt=dt), dx)
+
+    def scenario(
+        self, x0: Array, dt: float, n_step: int, random_state: RandomState = None
+    ) -> np.ndarray:
+        """
+        Returns a recursively-generated scenario, starting with initial values/array, x0
+        and continuing by steps with length dt for a given number of steps
+
+        Parameters
+        ----------
+        x0 : Array, either a single start value or array of start values if applicable
+        dt : float, the length between steps
+        n_step : int, the number of steps in the scenario, e.g. 360. In combination with
+            dt, this determines the scope of the scenario, e.g. dt=1/12 and n_step=360
+            will produce 360 monthly time steps, i.e. a 30-year monthly projection.
+        random_state : Union[int, np.random.RandomState, None], either an integer seed
+            or a numpy RandomState object directly, if reproducibility is desired
+
+        Returns
+        -------
+        samples : np.ndarray with shape (n_step + 1, dim), where samples[0] is the input
+            array, x0, and the subsequent indices are the steps of the scenario
+        """
+        # set a function-level pseudo random number generator, either by creating a new
+        # RandomState object with the integer argument, or using the RandomState object
+        # directly passed in the arguments.
+        prng = check_random_state(random_state)
+
+        # create a shell array that we will populate with values once they are available
+        # this is generally faster than appending subsequent steps to an array each time
+        samples = np.empty(shape=(n_step + 1, self.dim), dtype=np.float64)
+        samples[0] = to_array(x0)
+        for i in range(n_step):
+            samples[i + 1] = self.step(x0=samples[i], dt=dt, random_state=prng)
+
+        # squeeze the final dimension of the array if dim == 1
+        return samples.squeeze()
