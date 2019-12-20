@@ -16,7 +16,7 @@ from pyesg.processes import (
 from pyesg import utils
 
 
-# pylint: disable=unused-argument,line-too-long
+# pylint: disable=unused-argument
 def load_tests(loader, tests, ignored):
     """
     This function allows unittest to discover doctests in the module.
