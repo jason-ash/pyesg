@@ -6,6 +6,7 @@ import numpy as np
 from pyesg import AcademyRateProcess, WienerProcess
 from pyesg.processes import (
     academy_rate_process,
+    black_scholes_process,
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
     heston_process,
@@ -15,7 +16,7 @@ from pyesg.processes import (
 from pyesg import utils
 
 
-# pylint: disable=unused-argument,line-too-long
+# pylint: disable=unused-argument
 def load_tests(loader, tests, ignored):
     """
     This function allows unittest to discover doctests in the module.
@@ -30,6 +31,7 @@ def load_tests(loader, tests, ignored):
     """
     tests.addTests(doctest.DocTestSuite(utils))
     tests.addTests(doctest.DocTestSuite(academy_rate_process))
+    tests.addTests(doctest.DocTestSuite(black_scholes_process))
     tests.addTests(doctest.DocTestSuite(cox_ingersoll_ross_process))
     tests.addTests(doctest.DocTestSuite(geometric_brownian_motion))
     tests.addTests(doctest.DocTestSuite(heston_process))
