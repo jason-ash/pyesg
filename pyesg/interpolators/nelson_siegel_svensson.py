@@ -51,8 +51,7 @@ class NelsonSiegelSvensson(Interpolator):
             + beta3 * (factor1 - np.exp(-x * tau1))
         )
 
-    @property
-    def _fitted_params(self) -> Dict:
+    def coefs(self) -> Dict:
         return dict(
             beta0=self.beta0,
             beta1=self.beta1,
