@@ -1,6 +1,5 @@
 """Tests for Estimator Classes"""
 import unittest
-
 import numpy as np
 
 from pyesg import NelsonSiegel, NelsonSiegelSvensson
@@ -67,7 +66,3 @@ class TestNelsonSiegelSvensson(unittest.TestCase):
         self.assertTrue(hasattr(estimator, "beta3"))
         self.assertTrue(hasattr(estimator, "tau0"))
         self.assertTrue(hasattr(estimator, "tau1"))
-
-
-if __name__ == "__main__":
-    unittest.main()
