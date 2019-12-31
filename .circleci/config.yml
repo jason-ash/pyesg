@@ -5,6 +5,7 @@ workflows:
   build:
     jobs:
       - build-python-3.6
+      - build-python-3.7
 jobs:
   build-python-3.6: &build-template
     docker:
