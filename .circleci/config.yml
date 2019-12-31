@@ -30,7 +30,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            python3 setup.py test
+            python3 -m unittest discover --verbose
   build-python-3.7:
     <<: *build-template
     docker:
