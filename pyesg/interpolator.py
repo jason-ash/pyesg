@@ -5,7 +5,7 @@ import numpy as np
 
 
 class Interpolator(ABC):
-    """Base class for Interpolators"""
+    """Abstract base class for Interpolators"""
 
     def __repr__(self) -> str:
         return f"<pyesg.{self.__class__.__name__}>"
@@ -25,6 +25,21 @@ class Interpolator(ABC):
         """
         Returns a dictionary of fitted model parameters.
         Parameters should default to None if they haven't been fitted yet.
+        """
+
+    @abstractmethod
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        """
+        Fits the interpolator using ordinary least squares
+
+        Parameters
+        ----------
+        X : np.array of maturies, must be >0
+        y : np.array of rates corresponding to each maturity
+
+        Returns
+        -------
+        self : returns an instance of self
         """
 
     def predict(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
