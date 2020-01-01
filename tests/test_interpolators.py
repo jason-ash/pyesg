@@ -2,10 +2,10 @@
 import unittest
 import numpy as np
 
-from pyesg import NelsonSiegel, NelsonSiegelSvensson
+from pyesg import NelsonSiegelInterpolator, SvenssonInterpolator
 
 
-class TestNelsonSiegel(unittest.TestCase):
+class TestNelsonSiegelInterpolator(unittest.TestCase):
     """Test Nelson Siegel Interpolator"""
 
     def __init__(self, *args, **kwargs):
@@ -15,19 +15,19 @@ class TestNelsonSiegel(unittest.TestCase):
 
     def test_predict_before_fit_error(self):
         """Throw an exception if we try to predict before fitting"""
-        estimator = NelsonSiegel()
+        estimator = NelsonSiegelInterpolator()
         self.assertRaises(RuntimeError, estimator.predict, self.X)
 
     def test_fixed_tau(self):
         """Ensure we don't overwrite tau if it's provided in the class constructor"""
         tau = 0.15
-        estimator = NelsonSiegel(tau=tau)
+        estimator = NelsonSiegelInterpolator(tau=tau)
         estimator.fit(self.X, self.y)
         self.assertEqual(estimator.tau, tau)
 
     def test_fit(self):
         """Ensure fitting this model sets the correct attributes"""
-        estimator = NelsonSiegel()
+        estimator = NelsonSiegelInterpolator()
         estimator.fit(self.X, self.y)
         self.assertTrue(hasattr(estimator, "beta0"))
         self.assertTrue(hasattr(estimator, "beta1"))
@@ -35,7 +35,7 @@ class TestNelsonSiegel(unittest.TestCase):
         self.assertTrue(hasattr(estimator, "tau"))
 
 
-class TestNelsonSiegelSvensson(unittest.TestCase):
+class TestSvenssonInterpolator(unittest.TestCase):
     """Test Nelson Siegel Interpolator"""
 
     def __init__(self, *args, **kwargs):
@@ -45,20 +45,20 @@ class TestNelsonSiegelSvensson(unittest.TestCase):
 
     def test_predict_before_fit_error(self):
         """Throw an exception if we try to predict before fitting"""
-        estimator = NelsonSiegelSvensson()
+        estimator = SvenssonInterpolator()
         self.assertRaises(RuntimeError, estimator.predict, self.X)
 
     def test_fixed_tau(self):
         """Ensure we don't overwrite tau if it's provided in the class constructor"""
         tau0, tau1 = 0.15, 0.3
-        estimator = NelsonSiegelSvensson(tau0=tau0, tau1=tau1)
+        estimator = SvenssonInterpolator(tau0=tau0, tau1=tau1)
         estimator.fit(self.X, self.y)
         self.assertEqual(estimator.tau0, tau0)
         self.assertEqual(estimator.tau1, tau1)
 
     def test_fit(self):
         """Ensure fitting this model sets the correct attributes"""
-        estimator = NelsonSiegelSvensson()
+        estimator = SvenssonInterpolator()
         estimator.fit(self.X, self.y)
         self.assertTrue(hasattr(estimator, "beta0"))
         self.assertTrue(hasattr(estimator, "beta1"))

@@ -6,7 +6,7 @@ from scipy import optimize
 from pyesg.interpolator import Interpolator
 
 
-class NelsonSiegelSvensson(Interpolator):
+class SvenssonInterpolator(Interpolator):
     """
     Nelson-Siegel-Svensson Curve Interpolator
 
@@ -61,7 +61,7 @@ class NelsonSiegelSvensson(Interpolator):
             tau1=self.tau1,
         )
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegelSvensson":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "SvenssonInterpolator":
         """
         Fits the Nelson-Siegel-Svensson interpolator using ordinary least squares
 

@@ -6,7 +6,7 @@ from scipy import optimize
 from pyesg.interpolator import Interpolator
 
 
-class NelsonSiegel(Interpolator):
+class NelsonSiegelInterpolator(Interpolator):
     """
     Nelson-Siegel Curve Interpolator
 
@@ -37,7 +37,7 @@ class NelsonSiegel(Interpolator):
     def coefs(self) -> Dict:
         return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegel":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegelInterpolator":
         """
         Fits the Nelson-Siegel interpolator using ordinary least squares
 
