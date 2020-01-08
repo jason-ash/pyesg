@@ -1,103 +1,12 @@
-"""Estimator classes for interest rate curve interpolation"""
+"""Nelson-Siegel-Svensson rate curve interpolator"""
 from typing import Dict, Optional, Union
 import numpy as np
 from scipy import optimize
 
-
-class Interpolator:
-    """Base class for Interpolators"""
-
-    def __repr__(self) -> str:
-        return f"<pyesg.{self.__class__.__name__}>"
-
-    def __call__(
-        self, x: Union[float, np.ndarray], **params
-    ) -> Union[float, np.ndarray]:
-        """Returns the Interpolator estimate of a rate at maturity x"""
-        raise NotImplementedError()
-
-    @property
-    def _fitted_params(self) -> Dict[str, Optional[float]]:
-        """
-        Returns a dictionary of fitted model parameters.
-        Parameters should default to None if they haven't been fitted yet.
-        """
-        raise NotImplementedError()
-
-    def _check_fitted(self) -> bool:
-        """Returns a boolean indicating whether or not the model has been fitted"""
-        return all(x is not None for x in self._fitted_params.values())
-
-    def predict(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-        """Returns the predicted values from an array of independent values"""
-        if self._check_fitted():
-            return self(x, **self._fitted_params)
-        raise RuntimeError("Must call 'fit' first!")
+from pyesg.interpolator import Interpolator
 
 
-class NelsonSiegel(Interpolator):
-    """
-    Nelson-Siegel Curve Interpolator
-
-    Parameters
-    ----------
-    tau : float, optional, if provided, then this value is not solved when 'fit' is called
-        otherwise, it is considered a free variable as part of the fitting process.
-    """
-
-    def __init__(self, tau: Optional[float] = None) -> None:
-        self.tau = tau  # optionally fit parameter
-        self._fit_tau: bool = tau is None  # whether or not to fit tau as a parameter
-        self.beta0: Optional[float] = None  # fit parameter
-        self.beta1: Optional[float] = None  # fit parameter
-        self.beta2: Optional[float] = None  # fit parameter
-
-    def __call__(
-        self, x: Union[float, np.ndarray], **params
-    ) -> Union[float, np.ndarray]:
-        """Returns the Nelson-Siegel interpolated value at a point, x"""
-        beta0 = params["beta0"]
-        beta1 = params["beta1"]
-        beta2 = params["beta2"]
-        tau = params["tau"]
-        factor = (1 - np.exp(-x * tau)) / (x * tau)
-        return beta0 + beta1 * factor + beta2 * (factor - np.exp(-x * tau))
-
-    @property
-    def _fitted_params(self) -> Dict:
-        return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegel":
-        """
-        Fits the Nelson-Siegel interpolator using ordinary least squares
-
-        Parameters
-        ----------
-        X : np.array of maturies, must be >0
-        y : np.array of rates corresponding to each maturity
-
-        Returns
-        -------
-        self : returns an instance of self
-        """
-        if self._fit_tau:
-            # solve for all betas and tau
-            def f(x0, x, y):
-                return self(x, beta0=x0[0], beta1=x0[1], beta2=x0[2], tau=x0[3]) - y
-
-            ls = optimize.least_squares(f, x0=[0.01, 0.01, 0.01, 1.0], args=(X, y))
-            self.beta0, self.beta1, self.beta2, self.tau = ls.x
-        else:
-            # keep tau fixed; solve for all betas
-            def f(x0, x, y):
-                return self(x, beta0=x0[0], beta1=x0[1], beta2=x0[2], tau=self.tau) - y
-
-            ls = optimize.least_squares(f, x0=[0.01, 0.01, 0.01], args=(X, y))
-            self.beta0, self.beta1, self.beta2 = ls.x
-        return self
-
-
-class NelsonSiegelSvensson(Interpolator):
+class SvenssonInterpolator(Interpolator):
     """
     Nelson-Siegel-Svensson Curve Interpolator
 
@@ -142,8 +51,7 @@ class NelsonSiegelSvensson(Interpolator):
             + beta3 * (factor1 - np.exp(-x * tau1))
         )
 
-    @property
-    def _fitted_params(self) -> Dict:
+    def coefs(self) -> Dict:
         return dict(
             beta0=self.beta0,
             beta1=self.beta1,
@@ -153,7 +61,7 @@ class NelsonSiegelSvensson(Interpolator):
             tau1=self.tau1,
         )
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegelSvensson":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "SvenssonInterpolator":
         """
         Fits the Nelson-Siegel-Svensson interpolator using ordinary least squares
 

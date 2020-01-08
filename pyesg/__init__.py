@@ -1,5 +1,7 @@
 """Top level imports"""
-from pyesg.interpolators import NelsonSiegel, NelsonSiegelSvensson
+from pyesg.interpolators.nelson_siegel import NelsonSiegelInterpolator
+from pyesg.interpolators.svensson import SvenssonInterpolator
+
 from pyesg.processes.academy_rate_process import AcademyRateProcess
 from pyesg.processes.black_scholes_process import BlackScholesProcess
 from pyesg.processes.cox_ingersoll_ross_process import CoxIngersollRossProcess
