@@ -1,6 +1,9 @@
 # pyesg
 Economic Scenario Generator for Python.
 
+[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
+[![PyPI version](https://badge.fury.io/py/pyesg.svg)](https://badge.fury.io/py/pyesg)
+
 ## Objectives
 I think an economic scenario generator library should have the following components:
 
