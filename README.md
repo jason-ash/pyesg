@@ -2,6 +2,7 @@
 Economic Scenario Generator for Python.
 
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/pyesg.svg)](https://pypi.python.org/pypi/pyesg/)
 [![PyPI version](https://badge.fury.io/py/pyesg.svg)](https://badge.fury.io/py/pyesg)
 
 ## Objectives
