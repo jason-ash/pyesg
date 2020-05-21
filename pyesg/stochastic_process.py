@@ -22,6 +22,9 @@ class StochasticProcess(ABC):
         4. coefs : a convenience method that stores all model coefficients in a dict so
             they can be referenced easily as a group
 
+    In addition, each subclass should define a classmethod called `example`, which will
+    instantiate a model with reasonable parameters for users to be able to get started.
+
     Given these methods above, the base class provides methods for expected value of the
     process, standard deviation, and a transition density (if applicable). Also provides
     a method, "step", that iterates an initial vector of parameters one step forward.
@@ -60,6 +63,14 @@ class StochasticProcess(ABC):
     @abstractmethod
     def coefs(self) -> Dict[str, np.ndarray]:
         """Returns a dictionary of the process coefficients"""
+
+    @classmethod
+    @abstractmethod
+    def example(cls):  # creates an instance of the class with default parameters
+        """
+        Creates an instance of this model with sensible default parameters, primarily to
+        be able to visualize or understand the dynamics of the model quickly.
+        """
 
     def apply(self, x0: Array, dx: Array) -> np.ndarray:
         """Returns a new array of x-values, given a starting array and change vector"""

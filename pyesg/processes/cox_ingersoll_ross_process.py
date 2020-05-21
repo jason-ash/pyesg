@@ -47,6 +47,10 @@ class CoxIngersollRossProcess(StochasticProcess):
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         return self.sigma * x0 ** 0.5
 
+    @classmethod
+    def example(cls):
+        return cls(mu=0.05, sigma=0.02, theta=0.1)
+
 
 if __name__ == "__main__":
     import doctest

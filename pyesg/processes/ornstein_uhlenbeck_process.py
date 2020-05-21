@@ -47,6 +47,10 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
         # diffusion of an Ornstein-Uhlenbeck process does not depend on x0
         return to_array(self.sigma)
 
+    @classmethod
+    def example(cls):
+        return cls(mu=0.05, sigma=0.015, theta=0.15)
+
 
 if __name__ == "__main__":
     import doctest

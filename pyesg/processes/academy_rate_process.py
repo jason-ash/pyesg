@@ -213,6 +213,27 @@ class AcademyRateProcess(StochasticProcess):
         # with the cholesky decomposition of the correlation matrix.
         return np.diag(volatility) @ cholesky
 
+    @classmethod
+    def example(cls):
+        return cls(
+            beta1=0.00509,
+            beta2=0.02685,
+            beta3=0.04001,
+            rho12=-0.19197,
+            rho13=0.0,
+            rho23=0.0,
+            sigma2=0.04148,
+            sigma3=0.11489,
+            tau1=0.035,
+            tau2=0.01,
+            tau3=0.0287,
+            theta=1.0,
+            phi=0.0002,
+            psi=0.25164,
+            long_rate_max=0.18,
+            long_rate_min=0.0115,
+        )
+
 
 if __name__ == "__main__":
     import doctest
