@@ -43,11 +43,11 @@ class WienerProcess(StochasticProcess):
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # drift of a Wiener process does not depend on x0
-        return to_array(self.mu)
+        return np.full_like(x0, self.mu)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion of a Wiener process does not depend on x0
-        return to_array(self.sigma)
+        return np.full_like(x0, self.sigma)
 
     @classmethod
     def example(cls):
@@ -100,7 +100,7 @@ class JointWienerProcess(StochasticProcess):
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # mu is already an array of expected returns; it doesn't depend on x0
-        return self.mu
+        return np.full_like(x0, self.mu)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion does not depend on x0

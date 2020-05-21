@@ -3,7 +3,6 @@ from typing import Dict
 import numpy as np
 
 from pyesg.stochastic_process import StochasticProcess
-from pyesg.utils import to_array
 
 
 class OrnsteinUhlenbeckProcess(StochasticProcess):
@@ -44,8 +43,9 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
         return self.theta * (self.mu - x0)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
-        # diffusion of an Ornstein-Uhlenbeck process does not depend on x0
-        return to_array(self.sigma)
+        # diffusion of an Ornstein-Uhlenbeck process does not depend on x0, but
+        # we want to match the shape of the passed x0 array
+        return np.full_like(x0, self.sigma)
 
     @classmethod
     def example(cls):

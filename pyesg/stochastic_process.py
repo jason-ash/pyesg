@@ -1,6 +1,6 @@
 """Abstract base classes for pyesg stochastic processes"""
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, Tuple
 import numpy as np
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_continuous, rv_frozen
@@ -141,8 +141,12 @@ class StochasticProcess(ABC):
         dx = rvs @ self.standard_deviation(x0=x0, dt=dt).T
         return self.apply(self.expectation(x0=x0, dt=dt), dx)
 
-    def scenario(
-        self, x0: Array, dt: float, n_step: int, random_state: RandomState = None
+    def scenarios(
+        self,
+        x0: Array,
+        dt: float,
+        shape: Tuple[int, ...],
+        random_state: RandomState = None,
     ) -> np.ndarray:
         """
         Returns a recursively-generated scenario, starting with initial values/array, x0
@@ -170,10 +174,27 @@ class StochasticProcess(ABC):
 
         # create a shell array that we will populate with values once they are available
         # this is generally faster than appending subsequent steps to an array each time
-        samples = np.empty(shape=(n_step + 1, self.dim), dtype=np.float64)
-        samples[0] = to_array(x0)
-        for i in range(n_step):
-            samples[i + 1] = self.step(x0=samples[i], dt=dt, random_state=prng)
+        # we'll generate a 2d array if this process has dim == 1; otherwise it will be 3
+        if self.dim == 1:
+            samples = np.empty(shape=(shape[0], shape[1] + 1), dtype=np.float64)
+        else:
+            samples = np.empty(
+                shape=(shape[0], shape[1] + 1, self.dim), dtype=np.float64
+            )
 
-        # squeeze the final dimension of the array if dim == 1
-        return samples.squeeze()
+        x0 = to_array(x0)  # ensure we're working with a numpy array before proceeding
+
+        try:
+            # can we broadcast the x0 array into the number of scenarios we want?
+            samples[:, 0] = x0
+        except ValueError:
+            raise ValueError(
+                f"Could not broadcast the input array, with shape {x0.shape}, into "
+                f"the scenario output array, with shape {samples.shape}"
+            )
+
+        # then we iterate through scenarios along the timesteps dimension
+        for i in range(shape[1]):
+            samples[:, i + 1] = self.step(x0=samples[:, i], dt=dt, random_state=prng)
+
+        return samples
