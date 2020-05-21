@@ -1,43 +1,8 @@
-"""Tests for the Vasicek Model"""
-import doctest
+"""Tests for stochastic processes"""
 import unittest
 import numpy as np
 
 from pyesg import AcademyRateProcess, WienerProcess
-from pyesg.processes import (
-    academy_rate_process,
-    black_scholes_process,
-    cox_ingersoll_ross_process,
-    geometric_brownian_motion,
-    heston_process,
-    ornstein_uhlenbeck_process,
-    wiener_process,
-)
-from pyesg import utils
-
-
-# pylint: disable=unused-argument
-def load_tests(loader, tests, ignored):
-    """
-    This function allows unittest to discover doctests in the module.
-
-    It appears not to use the arguments (or do anything, really), but this is
-    used internally by unittest to "discover" the tests it needs to run.
-
-    References
-    ----------
-    https://stackoverflow.com/questions/5681330/using-doctests-from-within-unittests
-    https://docs.python.org/2/library/unittest.html#load-tests-protocol
-    """
-    tests.addTests(doctest.DocTestSuite(utils))
-    tests.addTests(doctest.DocTestSuite(academy_rate_process))
-    tests.addTests(doctest.DocTestSuite(black_scholes_process))
-    tests.addTests(doctest.DocTestSuite(cox_ingersoll_ross_process))
-    tests.addTests(doctest.DocTestSuite(geometric_brownian_motion))
-    tests.addTests(doctest.DocTestSuite(heston_process))
-    tests.addTests(doctest.DocTestSuite(ornstein_uhlenbeck_process))
-    tests.addTests(doctest.DocTestSuite(wiener_process))
-    return tests
 
 
 class TestWienerProcess(unittest.TestCase):
