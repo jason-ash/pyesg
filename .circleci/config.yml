@@ -19,12 +19,12 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            python3 setup.py sdist
+            python setup.py sdist
       - run:
           name: Install dependencies
           command: |
-            sudo pip install --upgrade pip
-            sudo pip install .[dev]
+            pip install --upgrade pip
+            pip install -r requirements.txt ."[dev]"
       - run:
           name: Run pre-commit hooks
           command: |
