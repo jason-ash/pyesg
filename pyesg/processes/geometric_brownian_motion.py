@@ -48,6 +48,10 @@ class GeometricBrownianMotion(StochasticProcess):
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         return self.sigma * x0
 
+    @classmethod
+    def example(cls):
+        return cls(mu=0.05, sigma=0.2)
+
 
 if __name__ == "__main__":
     import doctest

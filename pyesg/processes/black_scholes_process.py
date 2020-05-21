@@ -43,6 +43,10 @@ class BlackScholesProcess(StochasticProcess):
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         return to_array(self.sigma)
 
+    @classmethod
+    def example(cls):
+        return cls(mu=0.05, sigma=0.2, dividend=0.01)
+
 
 if __name__ == "__main__":
     import doctest

@@ -49,6 +49,10 @@ class WienerProcess(StochasticProcess):
         # diffusion of a Wiener process does not depend on x0
         return to_array(self.sigma)
 
+    @classmethod
+    def example(cls):
+        return cls(mu=0.05, sigma=0.2)
+
 
 class JointWienerProcess(StochasticProcess):
     """
@@ -103,6 +107,12 @@ class JointWienerProcess(StochasticProcess):
         volatility = np.diag(self.sigma)
         cholesky = np.linalg.cholesky(self.correlation)
         return volatility @ cholesky
+
+    @classmethod
+    def example(cls):
+        return cls(
+            mu=[0.05, 0.03], sigma=[0.20, 0.15], correlation=[[1.0, 0.5], [0.5, 1.0]]
+        )
 
 
 if __name__ == "__main__":
