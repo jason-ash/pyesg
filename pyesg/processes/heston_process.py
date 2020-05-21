@@ -76,9 +76,3 @@ class HestonProcess(StochasticProcess):
     @classmethod
     def example(cls):
         return cls(mu=0.05, kappa=0.8, sigma=0.001, theta=0.05, rho=-0.5)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    print(doctest.testmod())

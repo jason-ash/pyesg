@@ -233,9 +233,3 @@ class AcademyRateProcess(StochasticProcess):
             long_rate_max=0.18,
             long_rate_min=0.0115,
         )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    print(doctest.testmod())

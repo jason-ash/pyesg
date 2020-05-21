@@ -50,9 +50,3 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
     @classmethod
     def example(cls):
         return cls(mu=0.05, sigma=0.015, theta=0.15)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    print(doctest.testmod())
