@@ -177,35 +177,32 @@ class AcademyRateProcess(StochasticProcess):
             volatility_ = np.s_[:, 2]
 
         # --volatility of the long-rate process--
-        # internally we model the monthly-log-volatility of the long-rate process;
-        # this variable follows an ornstein-uhlenbeck process with mean reversion
-        # parameter tau3, and mean reversion speed beta3. Because we are modeling
-        # log-volatiliy, we take the log of tau3 and the initial volatility level,
-        # x0[2]. This class's "apply" method will use exponentiation to update the
-        # value of volatility, so the output of the model is "converted" back to
-        # non-log volatility.
+        # internally we model the monthly-log-volatility of the long-rate process; this
+        # variable follows an ornstein-uhlenbeck process with mean reversion parameter
+        # tau3, and mean reversion speed beta3. Because we are modeling log-volatiliy,
+        # we take the log of tau3 and the initial volatility level, x0[2]. This class's
+        # "apply" method will use exponentiation to update the value of volatility,
+        # so the output of the model is "converted" back to non-log volatility.
         drift[volatility_] = self.beta3 * np.log(self.tau3 / x0[volatility_])
 
         # --spread between long-rate and short-rate--
-        # the spread follows an ornstein-uhlenbeck process with mean reversion
-        # parameter tau2 and mean reversion speed beta2. We model nominal spread, so
-        # the effect is additive to the original level of the spread. We also add a
-        # component based on the level of the log-long-rate compared to its mean
-        # reversion rate, tau1. This is multiplied by a factor, phi, and added to
-        # the drift component of the spread.
+        # the spread follows an ornstein-uhlenbeck process with mean reversion parameter
+        # tau2 and mean reversion speed beta2. We model nominal spread, so the effect is
+        # additive to the original level of the spread. We also add a component based on
+        # the level of the log-long-rate compared to its mean reversion rate, tau1. This
+        # is multiplied by a factor, phi, and added to the drift component of the spread
         drift[spread_] = self.beta2 * (self.tau2 - x0[spread_]) + self.phi * np.log(
             x0[longrate_] / self.tau1
         )
 
         # --long-term interest rate--
-        # internally we model the log-long-term rate as an ornstein-uhlenbeck
-        # process with mean reversion level tau1 and mean reversion speed beta1. We
-        # also add an effect based on the level of the spread relative to its long
-        # term mean times a factor, psi. Before we calculate the drift we set upper
-        # and lower bounds on the long term rate so it falls within a certain range.
-        # This range may be exceeded based on the random perturbations that are
-        # added later, which is ok. Similar to volatility, we apply the changes here
-        # using exponentiation.
+        # internally we model the log-long-term rate as an ornstein-uhlenbeck process
+        # with mean reversion level tau1 and mean reversion speed beta1. We also add an
+        # effect based on the level of the spread relative to its long term mean times a
+        # factor, psi. Before we calculate the drift we set upper and lower bounds on
+        # the long term rate so it falls within a certain range. This range may be
+        # exceeded based on the random perturbations that are added later, which is ok.
+        # Similar to volatility, we apply the changes here using exponentiation.
         drift[longrate_] = self.beta1 * np.log(self.tau1 / x0[longrate_]) + self.psi * (
             self.tau2 - x0[spread_]
         )
