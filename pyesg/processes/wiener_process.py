@@ -43,11 +43,11 @@ class WienerProcess(StochasticProcess):
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # drift of a Wiener process does not depend on x0
-        return np.full_like(x0, self.mu)
+        return np.full_like(x0, self.mu, dtype=np.float64)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion of a Wiener process does not depend on x0
-        return np.full_like(x0, self.sigma)
+        return np.full_like(x0, self.sigma, dtype=np.float64)
 
     @classmethod
     def example(cls):
@@ -100,11 +100,15 @@ class JointWienerProcess(StochasticProcess):
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # mu is already an array of expected returns; it doesn't depend on x0
-        return np.full_like(x0, self.mu)
+        return np.full_like(x0, self.mu, dtype=np.float64)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
-        # diffusion does not depend on x0
+        # diffusion does not depend on x0, but we want to match the shape of x0. If x0
+        # has shape (100, 2), then we want to export an array with size (100, 2, 2)
         volatility = np.diag(self.sigma)
+        if x0.ndim > 1:
+            # we have multiple start values for each index
+            volatility = np.repeat(volatility[None, :, :], x0.shape[0], axis=0)
         cholesky = np.linalg.cholesky(self.correlation)
         return volatility @ cholesky
 

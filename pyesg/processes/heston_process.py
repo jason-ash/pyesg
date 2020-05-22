@@ -59,7 +59,7 @@ class HestonProcess(StochasticProcess):
         # floor volatility at zero before continuing (truncation method)
         vol = max(0.0, x0[1] ** 0.5)
 
-        out = np.zeros_like(x0)
+        out = np.zeros_like(x0, dtype=np.float64)
         out[0] = self.mu * x0[0]
         out[1] = self.kappa * (self.theta - vol * vol)
         return out

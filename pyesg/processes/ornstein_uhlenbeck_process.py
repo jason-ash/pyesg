@@ -45,7 +45,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion of an Ornstein-Uhlenbeck process does not depend on x0, but
         # we want to match the shape of the passed x0 array
-        return np.full_like(x0, self.sigma)
+        return np.full_like(x0, self.sigma, dtype=np.float64)
 
     @classmethod
     def example(cls):

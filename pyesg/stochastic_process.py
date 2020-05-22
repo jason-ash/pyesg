@@ -138,7 +138,10 @@ class StochasticProcess(ABC):
         # correlated random draws.
         x0 = to_array(x0)
         rvs = self.dW.rvs(size=x0.shape, random_state=check_random_state(random_state))
-        dx = rvs @ self.standard_deviation(x0=x0, dt=dt).T
+        if self.dim == 1:
+            dx = rvs * self.standard_deviation(x0=x0, dt=dt)
+        else:
+            dx = rvs @ self.standard_deviation(x0=x0, dt=dt).T
         return self.apply(self.expectation(x0=x0, dt=dt), dx)
 
     def scenarios(
