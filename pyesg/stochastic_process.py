@@ -38,8 +38,8 @@ class StochasticProcess(ABC):
     """
 
     def __init__(self, dim: int = 1, dW: rv_continuous = stats.norm) -> None:
-        self.dim = dim
         self.dW = dW
+        self.dim = dim
 
     def __repr__(self) -> str:
         return f"<pyesg.{self.__class__.__name__}{self.coefs()}>"
@@ -141,14 +141,20 @@ class StochasticProcess(ABC):
         if self.dim == 1:
             dx = rvs * self.standard_deviation(x0=x0, dt=dt)
         else:
-            dx = rvs @ self.standard_deviation(x0=x0, dt=dt).T
+            if x0.ndim == 1:
+                # single sample from a joint process
+                dx = rvs @ self.standard_deviation(x0=x0, dt=dt).transpose(1, 0)
+            else:
+                # multiple samples from a joint process
+                dx = np.einsum("ab,acb->ac", rvs, self.standard_deviation(x0, 1.0))
         return self.apply(self.expectation(x0=x0, dt=dt), dx)
 
-    def scenarios(
+    def scenarios(  # pylint: disable=too-many-arguments
         self,
         x0: Array,
         dt: float,
-        shape: Tuple[int, ...],
+        n_scenarios: int,
+        n_steps: int,
         random_state: RandomState = None,
     ) -> np.ndarray:
         """
@@ -159,33 +165,33 @@ class StochasticProcess(ABC):
         ----------
         x0 : Array, either a single start value or array of start values if applicable
         dt : float, the length between steps
-        n_step : int, the number of steps in the scenario, e.g. 360. In combination with
+        n_scenarios : int, the number of scenarios to generate, e.g. 1000
+        n_steps : int, the number of steps in the scenario, e.g. 52. In combination with
             dt, this determines the scope of the scenario, e.g. dt=1/12 and n_step=360
-            will produce 360 monthly time steps, i.e. a 30-year monthly projection.
+            will produce 360 monthly time steps, i.e. a 30-year monthly projection
         random_state : Union[int, np.random.RandomState, None], either an integer seed
             or a numpy RandomState object directly, if reproducibility is desired
 
         Returns
         -------
-        samples : np.ndarray with shape (n_step + 1, dim), where samples[0] is the input
-            array, x0, and the subsequent indices are the steps of the scenario
+        samples : np.ndarray with shape (n_scenarios, n_steps + 1) for a one-dimensional
+            stochastic process, or (n_scenarios, n_steps + 1, dim) for a two-dimensional
+            stochastic process, where the first timestep of each scenario is x0
         """
         # set a function-level pseudo random number generator, either by creating a new
         # RandomState object with the integer argument, or using the RandomState object
         # directly passed in the arguments.
         prng = check_random_state(random_state)
 
+        x0 = to_array(x0)  # ensure we're working with a numpy array before proceeding
+
         # create a shell array that we will populate with values once they are available
         # this is generally faster than appending subsequent steps to an array each time
         # we'll generate a 2d array if this process has dim == 1; otherwise it will be 3
-        if self.dim == 1:
-            samples = np.empty(shape=(shape[0], shape[1] + 1), dtype=np.float64)
-        else:
-            samples = np.empty(
-                shape=(shape[0], shape[1] + 1, self.dim), dtype=np.float64
-            )
-
-        x0 = to_array(x0)  # ensure we're working with a numpy array before proceeding
+        shape: Tuple[int, ...] = (n_scenarios, n_steps + 1)
+        if self.dim > 1:
+            shape = (shape[0], shape[1], self.dim)
+        samples = np.empty(shape=shape, dtype=np.float64)
 
         try:
             # can we broadcast the x0 array into the number of scenarios we want?
@@ -197,7 +203,7 @@ class StochasticProcess(ABC):
             )
 
         # then we iterate through scenarios along the timesteps dimension
-        for i in range(shape[1]):
+        for i in range(n_steps):
             samples[:, i + 1] = self.step(x0=samples[:, i], dt=dt, random_state=prng)
 
         return samples
