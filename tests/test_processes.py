@@ -154,9 +154,6 @@ class BaseProcessMixin:
             expected = np.repeat(actual[0][None, :], 5, axis=0)
         self.assertIsNone(np.testing.assert_array_equal(actual, expected))
 
-    # def test_validate_x0(self):
-    #     """Validate x0"""
-
 
 class TestBlackScholesProcess(BaseProcessMixin, unittest.TestCase):
     """Test BlackScholesProcess"""
@@ -249,9 +246,6 @@ class TestHestonProcess(BaseProcessMixin, unittest.TestCase):
         cls.multiple_x0 = np.array(
             [[10.0, 0.04], [10.0, 0.04], [10.0, 0.04], [10.0, 0.04]]
         )
-
-    # def test_volatility_floor(self):
-    #     """Ensure volatility is floored at zero"""
 
 
 class TestJointWienerProcess(BaseProcessMixin, unittest.TestCase):
