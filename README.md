@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/images/pyesg.png" height=300 />
+  <img src="docs/images/pyesg.png" height=200 />
 </p>
 <p align="center">
-  <em>Generate scenarios for stocks, interest rates, and other stochastic processes. <strong>pyesg</strong> is an economic scenario generator for Python.</em>
+  <em>Generate scenarios for stocks, interest rates, and other stochastic processes.<br><strong>pyesg</strong> is a lightning fast economic scenario generator for Python.</em>
 </p>
 
 <p align="center">
@@ -23,90 +23,128 @@
   </a>
 </p>
 
+---
 
-## Objectives
-I think an economic scenario generator library should have the following components:
+An economic scenario generator is a tool used to simulate the behavior of financial markets like stocks or interest rates. Economic scenarios help to improve our understanding of the risks inherent in these markets. Actuaries and other financial professionals use economic scenario generators to estimate the potential range of outcomes their businesses might expect in the future.
 
-1. A suite of stochastic models - inspired by the "fit"/"predict" scikit-learn API
-    - that are easy to calibrate ("fit") using historical data, or to manually provide parameters.
-    - that can simulate future economic paths ("predict")
-2. A suite of model and scenario evaluation tools to
-    - evaluate the goodness of fit of models
-    - calculate significance measures of generated scenarios (to select subsets of scenarios if desired)
-3. Replicate the existing SOA and AAA Excel generator so actuarial teams can migrate to Python.
-4. Minimal dependencies - relying on the standard scientific python stack: `numpy`, `pandas`, and `scipy`, with optional plotting from `matplotlib`.
+## Key Features
 
-I expect that these objectives may shift or expand as I continue working on the library. Please let me know if you think anything is missing!
+- High performance scenario generation from vectorized **numpy** code. Generate 10,000+ scenarios in fractions of a second
+- Dozens of stochastic processes available out of the box
+    - Equity: Geometric Brownian Motion / Black Scholes, Heston
+    - Interest rate: Vasicek, Cox-Ingersoll-Ross, Hull-White
+- Complete implementation of the American Academy of Actuaries <a href="https://www.actuary.org/content/economic-scenario-generators" target="_blank">stochastic interest rate generator</a> that is **200 times faster** than the Excel version
+- Curve interpolation functions like Nelson-Siegel and Svensson models
+- Hundreds of unit tests to ensure models work as expected
+- Completely open source software, free to use, copy, or modify under MIT license
 
-## Installation
-You can install pyesg from the command prompt with the following:
+## Coming soon
+
+- Fit stochastic models using historical data
+- Built-in plotting methods
+- Scenario summary reports
+
+## Installing **_pyesg_**
+You can install **_pyesg_** using pip.
 
 ```
 pip install pyesg
 ```
 
-<details><summary><strong>Geometric Brownian Motion<strong></summary>
+## Usage
+
+All models in **_pyesg_** are created and used nearly identically.
+
+First, create a model with the necessary parameters, like mu, sigma, theta, etc.
 
 ```python
-from pyesg import GeometricBrownianMotion
+import pyesg
 
-model = GeometricBrownianMotion.example()
-# <pyesg.GeometricBrownianMotion{'mu': 0.05, 'sigma': 0.2}>
+# instantiate a new model with the required parameters
+model = pyesg.GeometricBrownianMotion(mu=0.05, sigma=0.2)
 ```
 
+ Then generate scenarios by calling the `<model>.scenarios` method, passing its arguments:
+- `x0`, the value or array of values each scenario starts with. For example, you might pass `100.0` to model a security with a current value of $100, or [100.0, 90.0] to model two scenarios with start values of $100 and $90.
+- `dt`, the length of each time step in the projection, in years. For example, you might pass `1/12` to model mothly timesteps, `1/52` to model weekly timesteps, `1/252` to model daily (trading day) timesteps, or `1` to model annual timesteps.
+- `n_scenarios`, the number of scenarios you want to generate. Often you can generate 10,000 scenarios in fractions of a second.
+- `n_steps`, the number of timesteps for each scenario. In combination with `dt`, this argument determines the total length of time a projection covers. For example, with `dt=1/52` and `n_steps=104`, the projection will cover two years with weekly timesteps.
+- `random_state`, an optional field that may be provided if you want to be able to reproduce pseudo-random numbers for each batch of scenarios.
+
+```python
+import pyesg
+
+# instantiate a new model with the required parameters
+model = pyesg.GeometricBrownianMotion(mu=0.05, sigma=0.2)
+
+# prepare the arguments to generate scenarios. Here we'll
+# generate 10,000 scenarios with 252 daily (trading day)
+# time steps, for a one-year projection in total.
+x0 = 100.0           # the start value of our process
+dt = 1/252           # the length of each timestep in years
+n_scenarios = 10000  # the number of scenarios to generate
+n_steps = 252        # the number of time steps per scenario
+random_state = 123   # optional random_state for reproducibility
+
+# now we generate the scenarios; this outputs a numpy array. It will
+# have shape (10000, 253), which represents (scenarios, timesteps).
+# There are 253 timesteps because the initial value is included to start
+results = model.scenarios(x0, dt, n_scenarios, n_steps, random_state)
+
+# array([[100.        ,  98.65207527,  97.12924873, ..., 111.3500094 ,
+#         112.00479028, 113.12444153],
+#        [100.        , 101.27637842, 100.8971646 , ...,  61.8709475 ,
+#          63.00222064,  62.22126261],
+#        [100.        , 100.37636067,  99.32267874, ..., 141.66969149,
+#         140.38291993, 138.91659076],
+#        ...,
+#        [100.        ,  99.42484152,  97.68732205, ..., 139.9306172 ,
+#         139.52301459, 139.05345463],
+#        [100.        , 100.75304745, 102.09894601, ..., 115.66615197,
+#         116.16385992, 118.06267759],
+#        [100.        , 101.24269853, 101.73381851, ...,  84.65843473,
+#          84.73018762,  85.09768131]])
+```
+
+## Available Models
+
+### Equity
+
+<details>
+  <summary>Black Scholes Process</summary>
 </details>
 
-<details><summary><strong>Geometric Brownian Motion<strong></summary>
-
-```python
-from pyesg import GeometricBrownianMotion
-
-model = GeometricBrownianMotion.example()
-# <pyesg.GeometricBrownianMotion{'mu': 0.05, 'sigma': 0.2}>
-```
-
+<details>
+  <summary>Geometric Brownian Motion</summary>
 </details>
 
-## License
-Open Source and licensed under MIT, Copyright &copy; 2019 Jason Ash
+<details>
+  <summary>Heston Model</summary>
+</details>
 
-## Examples
+### Interest Rate
 
-#### Stochastic Processes
-The project is in its early stages, but I've recently implemented several stochastic processes. Currently the stochastic processes generate single scenarios at a time, but I'm working on a faster batch sampling method. At the moment, the API looks like this.
+<details>
+  <summary>American Academy of Actuaries Interest Rate Generator</summary>
+</details>
 
-```python
-# pyesg currently has stochastic processes for:
-#    - OrnsteinUhlenbeckProcess (Vasicek model)
-#    - CoxIngersollRossProcess (square root model)
-#    - AcademyRateProcess (American Academy of Actuaries interest rate model)
-#    - Heston Process (stochastic volatility process)
-#    - Wiener Process (simple random walk)
-#    - BlackScholesProcess (geometric brownian motion)
-from pyesg import OrnsteinUhlenbeckProcess
+<details>
+  <summary>Cox-Ingersoll-Ross</summary>
+</details>
 
-# create a Vasicek Model (Ornstein Uhlenbeck Process) with given paramters
-oup = OrnsteinUhlenbeckProcess(mu=0.05, sigma=0.015, theta=0.15)
+<details>
+  <summary>Ornstein-Uhlenbeck Process (Vasicek Model)</summary>
+</details>
 
-# generate a single interest rate scenario by specifying the time step (steps/yr),
-# the number of steps to project, and the starting value, x0. Below we simulate
-# weekly timesteps for one year starting at an initial value of 3.0%.
-oup.scenario(x0=0.03, dt=1/52, n_step=52, random_state=42)
-# array([0.03      , 0.03109092, 0.03085786, 0.03226035, 0.03547962,
-#        0.03503443, 0.03459057, 0.03791998, 0.03955119, 0.03860476,
-#        0.03976623, 0.03883178, 0.03789522, 0.03843345, 0.03448695,
-#        0.03094365, 0.02982899, 0.02778036, 0.02849813, 0.02667135,
-#        0.02380088, 0.02692519, 0.02652211, 0.0267303 , 0.02383377,
-#        0.02277686, 0.02308612, 0.02076955, 0.02163536, 0.02046778,
-#        0.01994621, 0.01878128, 0.02272431, 0.02277491, 0.02065327,
-#        0.02244892, 0.01998889, 0.02050992, 0.01651863, 0.01385242,
-#        0.01436618, 0.01600508, 0.01645961, 0.01631579, 0.01578663,
-#        0.01280981, 0.01141972, 0.01057282, 0.0128855 , 0.01370733,
-#        0.01014468, 0.01093378, 0.01024545])
-```
+### General
 
-#### Nelson-Siegel and Nelson-Siegel-Svensson Curve Interpolators
-We can almost always observe interest rates at key maturities, for example, bonds trading with maturies of 1, 2, 3, 5, 7, or 10 years. If we want to estimate the interest rate for an 8-year bond, we need to interpolate between the observed values. Simple techniques like linear interpolation are possible, but have certain obvious disadvantages - namely that the interest rate curve is non-linear. Instead, better techniques like the Nelson-Siegel and Nelson-Siegel-Svensson interpolators might give better results. Both interpolators are availabe in `pyesg`.
+<details>
+  <summary>Wiener Process</summary>
+</details>
+
+## Curve Interpolators
+
+We can almost always observe interest rates at key maturities, for example, bonds trading with maturies of 1, 2, 3, 5, 7, or 10 years. If we want to estimate the interest rate for an 8-year bond, we need to interpolate between the observed values. Simple techniques like linear interpolation are possible, but have certain obvious disadvantages - namely that the interest rate curve is non-linear. Instead, better techniques like the Nelson-Siegel and Nelson-Siegel-Svensson interpolators might give better results. Both interpolators are availabe in **_pyesg_**.
 
 ```python
 import numpy as np
@@ -140,4 +178,9 @@ nelson_siegel.predict(np.arange(1, 31, 1))
 #        0.02896329, 0.02899205, 0.02901876, 0.02904362, 0.02906683])
 ```
 
-<img src="docs/images/NelsonSiegel.png" width="600">
+<p align="center">
+  <img src="docs/images/NelsonSiegel.png" width="600">
+</p>
+
+## License
+Open Source and licensed under MIT, Copyright &copy; 2019 Jason Ash
