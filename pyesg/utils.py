@@ -1,11 +1,19 @@
 """Useful functions"""
 from typing import List, Union, Tuple
 import numpy as np
+import pandas as pd
 
 
 # typing aliases
 Array = Union[
-    float, int, List[float], List[int], Tuple[float, ...], Tuple[int, ...], np.ndarray
+    float,
+    int,
+    List[float],
+    List[int],
+    Tuple[float, ...],
+    Tuple[int, ...],
+    np.ndarray,
+    pd.Series,
 ]
 RandomState = Union[int, np.random.RandomState, None]
 
@@ -75,19 +83,17 @@ def to_array(value: Array) -> np.ndarray:
     >>> to_array([[1.0, 0.5], [0.5, 1.0]])
     array([[1. , 0.5],
            [0.5, 1. ]])
+    >>> to_array(pd.Series([0.3, 0.5, 0.7]))
+    array([0.3, 0.5, 0.7])
     """
     if isinstance(value, (int, float)):
         return np.array([value], dtype=np.float64)
     if isinstance(value, (list, tuple)):
         return np.array(value, dtype=np.float64)
+    if isinstance(value, pd.Series):
+        return value.values
     if isinstance(value, np.ndarray):
         if value.shape == ():
             return value.astype(np.float64)[None]
         return value.astype(np.float64)
     raise TypeError(f"{value} is not a valid type")
-
-
-if __name__ == "__main__":
-    import doctest
-
-    print(doctest.testmod())

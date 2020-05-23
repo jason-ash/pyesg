@@ -1,70 +1,260 @@
-"""Tests for the Vasicek Model"""
-import doctest
+"""Tests for stochastic processes"""
 import unittest
 import numpy as np
+import pandas as pd
 
-from pyesg import AcademyRateProcess, WienerProcess
-from pyesg.processes import (
-    academy_rate_process,
-    black_scholes_process,
-    cox_ingersoll_ross_process,
-    geometric_brownian_motion,
-    heston_process,
-    ornstein_uhlenbeck_process,
-    wiener_process,
+from pyesg import (
+    AcademyRateProcess,
+    BlackScholesProcess,
+    CoxIngersollRossProcess,
+    GeometricBrownianMotion,
+    HestonProcess,
+    JointWienerProcess,
+    OrnsteinUhlenbeckProcess,
+    WienerProcess,
 )
-from pyesg import utils
 
 
-# pylint: disable=unused-argument
-def load_tests(loader, tests, ignored):
+class BaseProcessMixin:
     """
-    This function allows unittest to discover doctests in the module.
-
-    It appears not to use the arguments (or do anything, really), but this is
-    used internally by unittest to "discover" the tests it needs to run.
-
-    References
-    ----------
-    https://stackoverflow.com/questions/5681330/using-doctests-from-within-unittests
-    https://docs.python.org/2/library/unittest.html#load-tests-protocol
+    Holds common tests for all processes. Each model should subclass this mixin to
+    inherit tests for scenario generation, expectation, dimension-checking, etc. Each
+    model subclass will need to create a `self.model` instance that can be tested, plus
+    `self.single_x0` and `self.multiple_x0` attributes that define reasonable starting
+    value arrays for single start values and multiple start values, respectively.
     """
-    tests.addTests(doctest.DocTestSuite(utils))
-    tests.addTests(doctest.DocTestSuite(academy_rate_process))
-    tests.addTests(doctest.DocTestSuite(black_scholes_process))
-    tests.addTests(doctest.DocTestSuite(cox_ingersoll_ross_process))
-    tests.addTests(doctest.DocTestSuite(geometric_brownian_motion))
-    tests.addTests(doctest.DocTestSuite(heston_process))
-    tests.addTests(doctest.DocTestSuite(ornstein_uhlenbeck_process))
-    tests.addTests(doctest.DocTestSuite(wiener_process))
-    return tests
+
+    def test_single_initial_value_drift_shape(self):
+        """Ensure the drift has the correct shape for a single start value"""
+        drift = self.model.drift(x0=self.single_x0)
+        self.assertEqual(drift.shape, self.single_x0.shape)
+
+    def test_multiple_initial_value_drift_shape(self):
+        """Ensure the drift has the correct shape for multiple start values"""
+        drift = self.model.drift(x0=self.multiple_x0)
+        self.assertEqual(drift.shape, self.multiple_x0.shape)
+
+    def test_single_initial_value_expectation_shape(self):
+        """Ensure the expectation has the correct shape for a single start value"""
+        exp = self.model.expectation(x0=self.single_x0, dt=1.0)
+        self.assertEqual(exp.shape, self.single_x0.shape)
+
+    def test_multiple_initial_value_expectation_shape(self):
+        """Ensure the expectation has the correct shape for multiple start values"""
+        exp = self.model.expectation(x0=self.multiple_x0, dt=1.0)
+        self.assertEqual(exp.shape, self.multiple_x0.shape)
+
+    def test_single_initial_value_standard_deviation_shape(self):
+        """Ensure the std deviation has the correct shape for a single start value"""
+        if self.model.dim == 1:
+            expected_shape = self.single_x0.shape
+        else:
+            expected_shape = (self.model.dim, self.model.dim)
+        std = self.model.standard_deviation(x0=self.single_x0, dt=1.0)
+        self.assertEqual(std.shape, expected_shape)
+
+    def test_multiple_initial_value_standard_deviation_shape(self):
+        """Ensure the std deviation has the correct shape for multiple start value"""
+        if self.model.dim == 1:
+            expected_shape = self.multiple_x0.shape
+        else:
+            expected_shape = (self.multiple_x0.shape[0], self.model.dim, self.model.dim)
+        std = self.model.standard_deviation(x0=self.multiple_x0, dt=1.0)
+        self.assertEqual(std.shape, expected_shape)
+
+    def test_single_initial_value_step_shape(self):
+        """Ensure the step function returns an array matching the initial array"""
+        step = self.model.step(x0=self.single_x0, dt=1.0)
+        self.assertEqual(step.shape, self.single_x0.shape)
+
+    def test_multiple_initial_value_step_shape(self):
+        """Ensure the step function returns an array matching the initial array"""
+        step = self.model.step(x0=self.multiple_x0, dt=1.0)
+        self.assertEqual(step.shape, self.multiple_x0.shape)
+
+    def test_single_initial_value_scenario_shape(self):
+        """Ensure scenarios from a single start value have the right shape"""
+        if self.model.dim == 1:
+            expected_shape = (50, 31)
+        else:
+            expected_shape = (50, 31, self.model.dim)
+        scenarios = self.model.scenarios(
+            x0=self.single_x0, dt=1.0, n_scenarios=50, n_steps=30
+        )
+        self.assertEqual(scenarios.shape, expected_shape)
+
+    def test_multiple_initial_value_scenario_shape(self):
+        """Ensure scenarios from a single start value have the right shape"""
+        if self.model.dim == 1:
+            expected_shape = (self.multiple_x0.shape[0], 31)
+        else:
+            expected_shape = (self.multiple_x0.shape[0], 31, self.model.dim)
+        scenarios = self.model.scenarios(
+            x0=self.multiple_x0,
+            dt=1.0,
+            n_scenarios=self.multiple_x0.shape[0],
+            n_steps=30,
+        )
+        self.assertEqual(scenarios.shape, expected_shape)
+
+    def test_single_initial_value_step_float_dtype(self):
+        """Ensure we can pass single initial values as a float"""
+        if self.model.dim == 1:  # can only run this for models with a single parameter
+            step = self.model.step(x0=float(self.single_x0), dt=1.0)
+            self.assertEqual(step.shape, self.single_x0.shape)
+
+    def test_single_initial_value_step_list_dtype(self):
+        """Ensure we can pass single initial values as a list of floats"""
+        step = self.model.step(x0=list(self.single_x0), dt=1.0)
+        self.assertEqual(step.shape, self.single_x0.shape)
+
+    def test_single_initial_value_step_series_dtype(self):
+        """Ensure we can pass single initial values as a pd.Series"""
+        step = self.model.step(x0=pd.Series(self.single_x0), dt=1.0)
+        self.assertEqual(step.shape, self.single_x0.shape)
+
+    def test_single_initial_value_unique_scenarios(self):
+        """Ensure when we generate lots of scenarios, they are all unique"""
+        scenarios = self.model.scenarios(
+            x0=self.single_x0, dt=1.0, n_scenarios=50, n_steps=30
+        )
+        if self.model.dim == 1:
+            # check the only model ouptut variable
+            self.assertEqual(50, len(set(scenarios[:, -1])))
+        else:
+            # check all model output variables
+            for dimension in range(self.model.dim):
+                self.assertEqual(50, len(set(scenarios[:, -1, dimension])))
+
+    def test_repeat_initial_value_drift(self):
+        """Ensure a repeated array of inputs has a repeated array of outputs"""
+        # create a new array of five identical start arrays stacked vertically. Then
+        # make sure the output array is five identical arrays also stacked vertically.
+        if self.model.dim == 1:
+            x0 = np.repeat(self.single_x0, 5)
+            actual = self.model.drift(x0=x0)
+            expected = np.repeat(actual[0], 5)
+        else:
+            x0 = np.repeat(self.single_x0[None, :], 5, axis=0)
+            actual = self.model.drift(x0=x0)
+            expected = np.repeat(actual[0][None, :], 5, axis=0)
+        self.assertIsNone(np.testing.assert_array_equal(actual, expected))
+
+    def test_repeat_initial_value_expectation(self):
+        """Ensure a repeated array of inputs has a repeated array of outputs"""
+        # create a new array of five identical start arrays stacked vertically. Then
+        # make sure the output array is five identical arrays also stacked vertically.
+        if self.model.dim == 1:
+            x0 = np.repeat(self.single_x0, 5)
+            actual = self.model.expectation(x0=x0, dt=1.0)
+            expected = np.repeat(actual[0], 5)
+        else:
+            x0 = np.repeat(self.single_x0[None, :], 5, axis=0)
+            actual = self.model.expectation(x0=x0, dt=1.0)
+            expected = np.repeat(actual[0][None, :], 5, axis=0)
+        self.assertIsNone(np.testing.assert_array_equal(actual, expected))
 
 
-class TestWienerProcess(unittest.TestCase):
+class TestBlackScholesProcess(BaseProcessMixin, unittest.TestCase):
+    """Test BlackScholesProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = BlackScholesProcess.example()
+        cls.single_x0 = np.array([100.0])
+        cls.multiple_x0 = np.full(50, 100.0)
+
+
+class TestCoxIngersollRossProcess(BaseProcessMixin, unittest.TestCase):
+    """Test CoxIngersollRossProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = CoxIngersollRossProcess.example()
+        cls.single_x0 = np.array([0.03])
+        cls.multiple_x0 = np.full(50, 0.03)
+
+
+class TestGeometricBrownianMotion(BaseProcessMixin, unittest.TestCase):
+    """Test GeometricBrownianMotion"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = GeometricBrownianMotion.example()
+        cls.single_x0 = np.array([100.0])
+        cls.multiple_x0 = np.full(50, 100.0)
+
+
+class TestOrnsteinUhlenbeckProcess(BaseProcessMixin, unittest.TestCase):
+    """Test OrnsteinUhlenbeckProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = OrnsteinUhlenbeckProcess.example()
+        cls.single_x0 = np.array([0.03])
+        cls.multiple_x0 = np.full(50, 0.03)
+
+
+class TestWienerProcess(BaseProcessMixin, unittest.TestCase):
     """Test WienerProcess"""
 
-    def test_sample_shapes(self):
-        """Ensure samples have the correct shape"""
-        model = WienerProcess(mu=0.045, sigma=0.15)
-        steps = model.step(x0=0.05, dt=1.0, random_state=None)
-        self.assertEqual(steps.shape, (1,))
-        steps = model.step(x0=np.array(0.05), dt=1.0, random_state=None)
-        self.assertEqual(steps.shape, (1,))
-        steps = model.step(x0=np.array([0.05]), dt=1.0, random_state=None)
-        self.assertEqual(steps.shape, (1,))
+    @classmethod
+    def setUpClass(cls):
+        cls.model = WienerProcess.example()
+        cls.single_x0 = np.array([100.0])
+        cls.multiple_x0 = np.full(50, 100.0)
 
 
-class TestAcademyRateProcess(unittest.TestCase):
+class TestAcademyRateProcess(BaseProcessMixin, unittest.TestCase):
     """Test AcademyRateProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = AcademyRateProcess.example()
+        cls.single_x0 = np.array([0.03, 0.0024, 0.03])
+        cls.multiple_x0 = np.array(
+            [
+                [0.03, 0.0024, 0.03],
+                [0.03, 0.0024, 0.03],
+                [0.03, 0.0024, 0.03],
+                [0.03, 0.0024, 0.03],
+            ]
+        )
 
     def test_cap(self):
         """Ensure that the drift process produces values within the acceptable range"""
-        arp = AcademyRateProcess(long_rate_min=0.0115, long_rate_max=0.18)
+        # ensure the expectation gets capped at the high end by long_rate_max
+        x0 = np.array([self.model.long_rate_max * 1.1, 0.0024, 0.03])
+        self.assertAlmostEqual(
+            self.model.expectation(x0=x0, dt=1.0)[0], self.model.long_rate_max
+        )
 
-        # ensure the expectation is never higher than the long_rate_max
-        x0 = np.array([0.2, 0.0024, 0.03])
-        self.assertLessEqual(arp.expectation(x0=x0, dt=1.0)[0], 0.18)
+        # ensure the expectation gets floored at the low end by long_rate_max
+        x0 = np.array([self.model.long_rate_min * 0.9, 0.0024, 0.03])
+        self.assertAlmostEqual(
+            self.model.expectation(x0=x0, dt=1.0)[0], self.model.long_rate_min
+        )
 
-        # ensure the expectatin is never lower than the long_rate_min
-        x0 = np.array([0.005, 0.0024, 0.03])
-        self.assertGreaterEqual(arp.expectation(x0=x0, dt=1.0)[0], 0.0115)
+
+class TestHestonProcess(BaseProcessMixin, unittest.TestCase):
+    """Test HestonProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = HestonProcess.example()
+        cls.single_x0 = np.array([10.0, 0.04])
+        cls.multiple_x0 = np.array(
+            [[10.0, 0.04], [10.0, 0.04], [10.0, 0.04], [10.0, 0.04]]
+        )
+
+
+class TestJointWienerProcess(BaseProcessMixin, unittest.TestCase):
+    """Test JointWienerProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = JointWienerProcess.example()
+        cls.single_x0 = np.array([100.0, 90.0])
+        cls.multiple_x0 = np.array(
+            [[100.0, 90.0], [100.0, 90.0], [100.0, 90.0], [100.0, 90.0]]
+        )

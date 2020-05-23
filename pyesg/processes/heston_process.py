@@ -56,29 +56,49 @@ class HestonProcess(StochasticProcess):
         return x0 + dx
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
-        # floor volatility at zero before continuing (truncation method)
-        vol = max(0.0, x0[1] ** 0.5)
+        # x0 is an array of [underlying asset, volatility]
+        drift = np.empty_like(x0, dtype=np.float64)
 
-        out = np.zeros_like(x0)
-        out[0] = self.mu * x0[0]
-        out[1] = self.kappa * (self.theta - vol * vol)
-        return out
+        # how do we need to slice the input array? store these before proceeding
+        if x0.ndim == 1:
+            underlying_ = np.s_[0]
+            volatility_ = np.s_[1]
+        else:
+            underlying_ = np.s_[:, 0]
+            volatility_ = np.s_[:, 1]
+
+        # floor volatility at zero before continuing (truncation method)
+        volatility = np.maximum(0.0, x0[volatility_]) ** 0.5
+        drift[volatility_] = self.kappa * (self.theta - volatility * volatility)
+        drift[underlying_] = self.mu * x0[underlying_]
+        return drift
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
-        # floor volatility near zero, but positive, to keep correlation effect
-        vol = max(1e-6, x0[1] ** 0.5)
+        # how do we need to slice the input array? store these before proceeding
+        if x0.ndim == 1:
+            underlying_ = np.s_[0]
+            volatility_ = np.s_[1]
+        else:
+            underlying_ = np.s_[:, 0]
+            volatility_ = np.s_[:, 1]
+
+        diffusion = np.empty_like(x0)
+        # floor volatility close to zero, but not zero, in order to preserve correlation
+        diffusion[volatility_] = np.maximum(0.000001, x0[volatility_]) ** 0.5
+        diffusion[underlying_] = x0[underlying_] * diffusion[volatility_]
+        diffusion[volatility_] = diffusion[volatility_] * self.sigma
+
+        if x0.ndim == 1:
+            # create a (2, 2) diffusion matrix
+            diffusion = np.diag(diffusion)
+        else:
+            # create a (N, 2, 2) diffusion matrix for the number of samples in x0
+            diffusion = np.eye(diffusion.shape[1]) * diffusion[:, None]
 
         # diffusion is the covariance diagonal times the cholesky correlation matrix
         cholesky = np.linalg.cholesky(self.correlation)
-        volatility = np.diag([x0[0] * vol, self.sigma * vol])
-        return volatility @ cholesky
+        return diffusion @ cholesky
 
     @classmethod
     def example(cls):
         return cls(mu=0.05, kappa=0.8, sigma=0.001, theta=0.05, rho=-0.5)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    print(doctest.testmod())

@@ -3,7 +3,6 @@ from typing import Dict
 import numpy as np
 
 from pyesg.stochastic_process import StochasticProcess
-from pyesg.utils import to_array
 
 
 class BlackScholesProcess(StochasticProcess):
@@ -38,17 +37,12 @@ class BlackScholesProcess(StochasticProcess):
         return x0 * np.exp(dx)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
-        return to_array(self.mu - self.dividend - 0.5 * self.sigma * self.sigma)
+        drift = self.mu - self.dividend - 0.5 * self.sigma * self.sigma
+        return np.full_like(x0, drift, dtype=np.float64)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
-        return to_array(self.sigma)
+        return np.full_like(x0, self.sigma, dtype=np.float64)
 
     @classmethod
     def example(cls):
         return cls(mu=0.05, sigma=0.2, dividend=0.01)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    print(doctest.testmod())

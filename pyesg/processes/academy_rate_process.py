@@ -145,16 +145,36 @@ class AcademyRateProcess(StochasticProcess):
         # long-rate (x0[0]) is modeled internally as a log process, so we use exp
         # spread (x0[1]) is an arithmetic process
         # volatility (x0[2]) is modeled internally as a log-process, so we use exp
-        out = x0.copy()
-        out[0] = x0[0] * np.exp(dx[0])
-        out[1] = x0[1] + dx[1]
-        out[2] = x0[2] * np.exp(dx[2])
+        out = np.empty_like(x0)
+
+        if x0.ndim == 1:
+            longrate_ = np.s_[0]
+            spread_ = np.s_[1]
+            volatility_ = np.s_[2]
+        else:
+            longrate_ = np.s_[:, 0]
+            spread_ = np.s_[:, 1]
+            volatility_ = np.s_[:, 2]
+
+        out[longrate_] = x0[longrate_] * np.exp(dx[longrate_])
+        out[spread_] = x0[spread_] + dx[spread_]
+        out[volatility_] = x0[volatility_] * np.exp(dx[volatility_])
         return out
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
         # x0 is an array of [long-rate, nominal spread, volatility]
         # create a new array to store the output, then simultaneously update all terms
-        out = x0.copy()
+        drift = np.empty_like(x0)
+
+        # how do we need to slice the input array? store these before proceeding
+        if x0.ndim == 1:
+            longrate_ = np.s_[0]
+            spread_ = np.s_[1]
+            volatility_ = np.s_[2]
+        else:
+            longrate_ = np.s_[:, 0]
+            spread_ = np.s_[:, 1]
+            volatility_ = np.s_[:, 2]
 
         # --volatility of the long-rate process--
         # internally we model the monthly-log-volatility of the long-rate process; this
@@ -163,7 +183,7 @@ class AcademyRateProcess(StochasticProcess):
         # we take the log of tau3 and the initial volatility level, x0[2]. This class's
         # "apply" method will use exponentiation to update the value of volatility,
         # so the output of the model is "converted" back to non-log volatility.
-        out[2] = self.beta3 * np.log(self.tau3 / x0[2])
+        drift[volatility_] = self.beta3 * np.log(self.tau3 / x0[volatility_])
 
         # --spread between long-rate and short-rate--
         # the spread follows an ornstein-uhlenbeck process with mean reversion parameter
@@ -171,7 +191,9 @@ class AcademyRateProcess(StochasticProcess):
         # additive to the original level of the spread. We also add a component based on
         # the level of the log-long-rate compared to its mean reversion rate, tau1. This
         # is multiplied by a factor, phi, and added to the drift component of the spread
-        out[1] = self.beta2 * (self.tau2 - x0[1]) + self.phi * np.log(x0[0] / self.tau1)
+        drift[spread_] = self.beta2 * (self.tau2 - x0[spread_]) + self.phi * np.log(
+            x0[longrate_] / self.tau1
+        )
 
         # --long-term interest rate--
         # internally we model the log-long-term rate as an ornstein-uhlenbeck process
@@ -181,37 +203,60 @@ class AcademyRateProcess(StochasticProcess):
         # the long term rate so it falls within a certain range. This range may be
         # exceeded based on the random perturbations that are added later, which is ok.
         # Similar to volatility, we apply the changes here using exponentiation.
-        out[0] = self.beta1 * np.log(self.tau1 / x0[0]) + self.psi * (self.tau2 - x0[1])
-        out[0] = min(np.log(self.long_rate_max / x0[0]), out[0])
-        out[0] = max(np.log(self.long_rate_min / x0[0]), out[0])
-        return out
+        drift[longrate_] = self.beta1 * np.log(self.tau1 / x0[longrate_]) + self.psi * (
+            self.tau2 - x0[spread_]
+        )
+        drift[longrate_] = np.minimum(
+            np.log(self.long_rate_max / x0[longrate_]), drift[longrate_]
+        )
+        drift[longrate_] = np.maximum(
+            np.log(self.long_rate_min / x0[longrate_]), drift[longrate_]
+        )
+        return drift
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
         # diffusion is the covariance diagonal times the cholesky correlation matrix
         # x0 is an array of [long-rate, spread, volatility]
-        cholesky = np.linalg.cholesky(self.correlation)
 
-        # volatility matrix starts as a copy of the initial array; we'll update below
-        volatility = x0.copy()
+        # how do we need to slice the input array? store these before proceeding
+        if x0.ndim == 1:
+            longrate_ = np.s_[0]
+            spread_ = np.s_[1]
+            volatility_ = np.s_[2]
+        else:
+            longrate_ = np.s_[:, 0]
+            spread_ = np.s_[:, 1]
+            volatility_ = np.s_[:, 2]
+
+        # diffusion matrix starts as a copy of the initial array; we'll update below
+        diffusion = np.empty_like(x0)
 
         # --volatility of the long-rate process--
         # this is just the value of sigma3 - the volatility of the volatility parameter
-        volatility[2] = self.sigma3
+        diffusion[volatility_] = self.sigma3
 
         # --spread between long-rate and short-rate--
         # this volatility follows a generalized ornstein-uhlenbeck process with an extra
         # factor of multiplying by the long rate raised to a power of theta
-        volatility[1] = self.sigma2 * x0[0] ** self.theta
+        diffusion[spread_] = self.sigma2 * x0[longrate_] ** self.theta
 
         # --long-term interest rate--
         # here we use the volatility value calculated by the third stochastic process.
         # however, because that volatility process models *monthly* volatility, we need
         # to scale it to be *annual* volatility, so we multiply by sqrt(12)
-        volatility[0] = x0[2] * 12 ** 0.5
+        diffusion[longrate_] = x0[volatility_] * 12 ** 0.5
 
         # finally, we output the matrix product of volatility (as a diagonal matrix)
         # with the cholesky decomposition of the correlation matrix.
-        return np.diag(volatility) @ cholesky
+        cholesky = np.linalg.cholesky(self.correlation)
+
+        if x0.ndim == 1:
+            # creates a (3, 3) array with a single diffusion matrix
+            diffusion = np.diag(diffusion)
+        else:
+            # creates a (N, 3, 3) array with a diffusion matrix per sample in x0
+            diffusion = np.eye(diffusion.shape[1]) * diffusion[:, None]
+        return diffusion @ cholesky
 
     @classmethod
     def example(cls):
@@ -233,9 +278,3 @@ class AcademyRateProcess(StochasticProcess):
             long_rate_max=0.18,
             long_rate_min=0.0115,
         )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    print(doctest.testmod())
