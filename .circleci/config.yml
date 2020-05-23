@@ -33,6 +33,7 @@ jobs:
           name: Run tests
           command: |
             coverage run --source=pyesg -m unittest discover --verbose
+            coveralls
   build-python-3.7:
     <<: *build-template
     docker:
