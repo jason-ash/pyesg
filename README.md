@@ -1,10 +1,28 @@
-# pyesg
-Economic Scenario Generator for Python.
+<p align="center">
+  <img src="docs/images/pyesg.png" height=300 />
+</p>
+<p align="center">
+  <em>Generate scenarios for stocks, interest rates, and other stochastic processes. <strong>pyesg</strong> is an economic scenario generator for Python.</em>
+</p>
 
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/pyesg.svg)](https://pypi.python.org/pypi/pyesg/)
-[![PyPI version](https://badge.fury.io/py/pyesg.svg)](https://badge.fury.io/py/pyesg)
-[![Coverage Status](https://coveralls.io/repos/github/jason-ash/pyesg/badge.svg?branch=master)](https://coveralls.io/github/jason-ash/pyesg?branch=master)
+<p align="center">
+  <a href="https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs" target="_blank">
+    <img src="https://img.shields.io/apm/l/atomic-design-ui.svg?" alt="License"/>
+  </a>
+  <a href="https://pypi.python.org/pypi/pyesg/" target="_blank">
+    <img src="https://img.shields.io/pypi/pyversions/pyesg.svg" alt="Supported python versions"/>
+  </a>
+  <a href="https://badge.fury.io/py/pyesg" target="_blank">
+    <img src="https://badge.fury.io/py/pyesg.svg" alt="Pypi package version"/>
+  </a>
+  <a href="https://circleci.com/gh/jason-ash/pyesg" target="_blank">
+    <img src="https://img.shields.io/circleci/build/github/jason-ash/pyesg" alt="Coverage"/>
+  </a>
+  <a href="https://coveralls.io/github/jason-ash/pyesg?branch=master" target="_blank">
+    <img src="https://coveralls.io/repos/github/jason-ash/pyesg/badge.svg?branch=master" alt="Coverage"/>
+  </a>
+</p>
+
 
 ## Objectives
 I think an economic scenario generator library should have the following components:
@@ -26,6 +44,28 @@ You can install pyesg from the command prompt with the following:
 ```
 pip install pyesg
 ```
+
+<details><summary><strong>Geometric Brownian Motion<strong></summary>
+
+```python
+from pyesg import GeometricBrownianMotion
+
+model = GeometricBrownianMotion.example()
+# <pyesg.GeometricBrownianMotion{'mu': 0.05, 'sigma': 0.2}>
+```
+
+</details>
+
+<details><summary><strong>Geometric Brownian Motion<strong></summary>
+
+```python
+from pyesg import GeometricBrownianMotion
+
+model = GeometricBrownianMotion.example()
+# <pyesg.GeometricBrownianMotion{'mu': 0.05, 'sigma': 0.2}>
+```
+
+</details>
 
 ## License
 Open Source and licensed under MIT, Copyright &copy; 2019 Jason Ash
