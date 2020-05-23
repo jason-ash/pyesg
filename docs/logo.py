@@ -1,5 +1,5 @@
 """Create the pyesg logo using matplotlib"""
-from matplotlib import pyplot as plt  # type: ignore
+from matplotlib import pyplot as plt  # type: ignore # pylint: disable=import-error
 from pyesg import GeometricBrownianMotion
 
 
