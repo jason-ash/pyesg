@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/pyesg.png" height=200 />
+  <img src="docs/images/pyesg.png" height=250 />
 </p>
 <p align="center">
   <em>Generate scenarios for stocks, interest rates, and other stochastic processes.<br><strong>pyesg</strong> is a lightning fast economic scenario generator for Python.</em>
@@ -29,14 +29,14 @@ An economic scenario generator is a tool used to simulate the behavior of financ
 
 ## Key Features
 
-- High performance scenario generation from vectorized **numpy** code. Generate 10,000+ scenarios in fractions of a second
+- Built on **numpy** for lightning fast scenario generation: 10,000+ scenarios in milliseconds
 - Dozens of stochastic processes available out of the box
     - Equity: Geometric Brownian Motion / Black Scholes, Heston
     - Interest rate: Vasicek, Cox-Ingersoll-Ross, Hull-White
 - Complete implementation of the American Academy of Actuaries <a href="https://www.actuary.org/content/economic-scenario-generators" target="_blank">stochastic interest rate generator</a> that is **200 times faster** than the Excel version
 - Curve interpolation functions like Nelson-Siegel and Svensson models
 - Hundreds of unit tests to ensure models work as expected
-- Completely open source software, free to use, copy, or modify under MIT license
+- Open source software, free to use, copy, or modify under MIT license
 
 ## Coming soon
 
@@ -55,7 +55,7 @@ pip install pyesg
 
 All models in **_pyesg_** are created and used nearly identically.
 
-First, create a model with the necessary parameters, like mu, sigma, theta, etc.
+First, create a model with its required parameters.
 
 ```python
 import pyesg
@@ -64,12 +64,14 @@ import pyesg
 model = pyesg.GeometricBrownianMotion(mu=0.05, sigma=0.2)
 ```
 
- Then generate scenarios by calling the `<model>.scenarios` method, passing its arguments:
-- `x0`, the value or array of values each scenario starts with. For example, you might pass `100.0` to model a security with a current value of $100, or [100.0, 90.0] to model two scenarios with start values of $100 and $90.
-- `dt`, the length of each time step in the projection, in years. For example, you might pass `1/12` to model mothly timesteps, `1/52` to model weekly timesteps, `1/252` to model daily (trading day) timesteps, or `1` to model annual timesteps.
-- `n_scenarios`, the number of scenarios you want to generate. Often you can generate 10,000 scenarios in fractions of a second.
-- `n_steps`, the number of timesteps for each scenario. In combination with `dt`, this argument determines the total length of time a projection covers. For example, with `dt=1/52` and `n_steps=104`, the projection will cover two years with weekly timesteps.
-- `random_state`, an optional field that may be provided if you want to be able to reproduce pseudo-random numbers for each batch of scenarios.
+Generate scenarios by calling the `<model>.scenarios` method, passing its arguments:
+- `x0` : the value or array of values each scenario starts with. For example, you might pass `100.0` to model a security with a current value of 100, or `[100.0, 90.0]` to model two scenarios with start values of 100 and 90.
+- `dt` : the length of each time step in the projection, in years. For example, you might pass `1/12` to model mothly timesteps, `1/52` to model weekly timesteps, `1/252` to model daily (trading day) timesteps, or `1` to model annual timesteps.
+- `n_scenarios` : the number of scenarios you want to generate. Often you can generate 10,000 scenarios in fractions of a second.
+- `n_steps` : the number of timesteps for each scenario. In combination with `dt`, this argument determines the total length of time a projection covers. For example, with `dt=1/52` and `n_steps=104`, the projection will cover two years with weekly timesteps. With `dt=1/12` and `n_steps=360`, the projection will cover 30 years with monthly timesteps.
+- `random_state` : an optional field that may be provided if you want to be able to reproduce pseudo-random numbers for each batch of scenarios. For example, `<model>.scenarios(..., random_state=123)` will generate the exact same batch of scenarios every time.
+
+This example generated 10,000 daily scenarios (2,520,000 values) in **160 milliseconds**.
 
 ```python
 import pyesg
@@ -104,6 +106,34 @@ results = model.scenarios(x0, dt, n_scenarios, n_steps, random_state)
 #         116.16385992, 118.06267759],
 #        [100.        , 101.24269853, 101.73381851, ...,  84.65843473,
 #          84.73018762,  85.09768131]])
+```
+
+All models provide methods to evaluate their drift, diffusion, expectation, standard deviation, and more.
+
+```python
+import pyesg
+
+# instantiate a new model with the required parameters
+model = pyesg.GeometricBrownianMotion(mu=0.05, sigma=0.2)
+
+# drift is the instantaneous drift of the process. For example,
+# if we start with x0=100, what is the instantaneous drift?
+model.drift(x0=100)
+# array([5.])
+
+# similarly we can measure the instantaneous diffusion
+model.diffusion(x0=100)
+# array([20.])
+
+# the expectation is the expected value of the process after
+# a given amount of time, dt. Here we calculate the expected
+# value of the process after one year.
+model.expectation(x0=100, dt=1.0)
+# array([105.])
+
+# the standard deviation is measured at a period of time too
+model.standard_deviation(x0=100, dt=1.0)
+# array([20.])
 ```
 
 ## Available Models
