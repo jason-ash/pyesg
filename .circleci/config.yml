@@ -33,6 +33,10 @@ jobs:
           name: Run tests
           command: |
             coverage run --source=pyesg -m unittest discover --verbose
+      - run:
+          name: Send coverage report
+          command: |
+            pip install coveralls
             coveralls
   build-python-3.7:
     <<: *build-template
