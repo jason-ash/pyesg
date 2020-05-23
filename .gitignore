@@ -1,10 +1,13 @@
 __pycache__/
 build/
 dist/
+env/
+.vscode
 *.egg-info/
 
-*.mypy_cache
-*.hypothesis
+.coverage
+.mypy_cache
+.hypothesis
 
 *.ipynb
 *.ipynb_checkpoints
