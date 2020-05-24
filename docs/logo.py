@@ -15,7 +15,7 @@ plt.tight_layout(0)
 
 ax.plot(lines)
 ax.annotate(
-    "pyesg", xy=(126, 160), ha="center", va="bottom", color="#283593", fontsize=84
+    "pyesg", xy=(126, 160), ha="center", va="bottom", color="#0D47A1", fontsize=84
 )
 
 ax.set_xlim(0, 253)
