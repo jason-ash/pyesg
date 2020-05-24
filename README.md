@@ -67,7 +67,9 @@ model = pyesg.GeometricBrownianMotion(mu=0.05, sigma=0.2)
 Generate scenarios by calling the `<model>.scenarios` method. The example below, with 10,000 daily scenarios (2,520,000 values) took just **160 milliseconds** to run!
 
 <details>
-  <summary>How to call <code>model.scenarios()</code>:</summary>
+  <summary>The <code>model.scenarios()</code> method:</summary>
+
+This method generates scenarios, given the following arguments:
 
 - `x0` : the value or array of values each scenario starts with. For example, you might pass `100.0` to model a security with a current value of 100, or `[100.0, 90.0]` to model two scenarios with start values of 100 and 90.
 - `dt` : the length of each time step in the projection, in years. For example, you might pass `1/12` to model mothly timesteps, `1/52` to model weekly timesteps, `1/252` to model daily (trading day) timesteps, or `1` to model annual timesteps.
