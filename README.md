@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/pyesg.png" height=250 />
+  <img src="docs/images/pyesg.png" height="50%" width="50%"/>
 </p>
 <p align="center">
   <em>Generate scenarios for stocks, interest rates, and other stochastic processes.<br><strong>pyesg</strong> is a lightning fast economic scenario generator for Python.</em>
