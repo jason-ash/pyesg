@@ -16,7 +16,7 @@
     <img src="https://badge.fury.io/py/pyesg.svg" alt="Pypi package version"/>
   </a>
   <a href="https://circleci.com/gh/jason-ash/pyesg" target="_blank">
-    <img src="https://img.shields.io/circleci/build/github/jason-ash/pyesg" alt="Coverage"/>
+    <img src="https://img.shields.io/circleci/build/github/jason-ash/pyesg" alt="Build status"/>
   </a>
   <a href="https://coveralls.io/github/jason-ash/pyesg?branch=master" target="_blank">
     <img src="https://coveralls.io/repos/github/jason-ash/pyesg/badge.svg?branch=master" alt="Coverage"/>
@@ -29,20 +29,18 @@
 
 An economic scenario generator simulates the behavior of unpredictable financial markets like stocks, interest rates, or energy prices. It uses mathematical models called _stochastic processes_ to generate thousands of potential scenarios that might occur. The stochastic processes describe the behavior of each market, like whether it generally trends up or down, or how widely its values might change from one day to the next. Then that behavior is combined with a random walk to generate a large number of unique, simulated paths.
 
-### Why are they useful?
-
-Economic scenario generators improve our understanding of the risks within the financial markets. Actuaries and other financial professionals use thousands of scenarios of stocks, interest rates, and other variables to estimate the potential range of outcomes their businesses might expect in the future. For example:
+What can you do with an economic scenario generator? Here are a few examples:
 
 <details>
-  <summary>Simulate a stock index to show how the value of an investment portfolio might change over the next year</summary>
+  <summary><strong>Simulate an investment portfolio</strong></summary>
 
   * Generate 1,000 correlated, daily stock prices using the `JointGeometricBrownianMotion` model
-  * Multiply the stock prices and the portfolio allocation percentages.
+  * Construct a portfolio from the stocks
   * Plot the value of the portfolio over time, and calculate metrics like high, low, max drawdown, etc.
 
 </details>
 <details>
-  <summary>Simulate interest rates to help choose a mortgage</summary>
+  <summary><strong>Choose a mortgage</strong></summary>
 
   * Generate 1,000 30-year, monthly scenarios of mortgage rates using the `CoxIngersollRossProcess` model
   * Calculate the monthly payment for different types of loans under each scenario:
@@ -54,25 +52,26 @@ Economic scenario generators improve our understanding of the risks within the f
 
 </details>
 <details>
-  <summary>Determine how much money you could withdraw from your savings during retirement</summary>
+  <summary><strong>Plan for retirement</strong></summary>
 
   * Generate 1,000 30-year, monthly scenarios of stock market data using the `GeometricBrownianMotion` model
   * Generate 1,000 30-year, monthly scenarios of bond fund data
   * Track your portfolio balance as a mix of investments in stocks and bonds
-  * Each month, simulate a withdrawal from your portfolio
-  * Determine whether you are comfortable withdrawing more or less money each month, and identify the types of market conditions that lead to the best and worst outcomes.
+  * Each month, simulate a withdrawal from your portfolio and the growth from your investments
+  * Adjust the withdrawal up or down and identify the types of markets that lead to the best and worst outcomes
 
 </details>
 <details>
-  <summary>Identify market conditions that put the most stress on your business</summary>
+  <summary><strong>Protect your business</strong></summary>
 
-  * A bank could test whether their loan portfolio is resilient to sharp drops in interest rates and higher-than-expected refinancing
-  * An investment advisor that charges fees based on account balances could determine how much their revenue would decrease if the market fell by a certain percent next year.
-  * An insurance company could identify whether its assets would be sufficient to cover liabilities under a wide range of bond market scenarios.
+  * **Banks**: test whether loan portfolios are resilient to drops in interest rates and higher-than-expected customer refinancing
+  * **Investment managers**: test the impact of market declines on revenue from account-based fees
+  * **Insurers**: test whether assets are sufficient to cover liabilities under a wide range of bond market scenarios
+  * **Small Businesses**: model customer demand correlated with the stock market to plan for potential downturns
 
 </details>
 
-## Key Features
+## Key Features of **_pyesg_**
 
 - Built on **numpy** for lightning fast scenario generation: 10,000+ scenarios in milliseconds
 - Dozens of stochastic processes available out of the box
@@ -80,17 +79,18 @@ Economic scenario generators improve our understanding of the risks within the f
     - Interest rate: Vasicek, Cox-Ingersoll-Ross, Hull-White
 - Complete implementation of the American Academy of Actuaries <a href="https://www.actuary.org/content/economic-scenario-generators" target="_blank">stochastic interest rate generator</a> that is **200 times faster** than the Excel version
 - Curve interpolation functions like Nelson-Siegel and Svensson models
-- Hundreds of unit tests to ensure models work as expected
+- Hundreds of unit tests and excellent <a href="https://coveralls.io/github/jason-ash/pyesg?branch=master" target="_blank">code coverage</a>
 - Open source software, free to use, copy, or modify under MIT license
 
 ## Coming soon
 
+- More models!
 - Fit stochastic models using historical data
 - Built-in plotting methods
 - Scenario summary reports
 
 ## Installing **_pyesg_**
-You can install **_pyesg_** using pip.
+**_pyesg_** is available on <a href="https://pypi.org/project/pyesg/" target="_blank">PyPI</a>, and can be installed with pip.
 
 ```
 pip install pyesg
@@ -105,14 +105,14 @@ First, create a model with its required parameters.
 ```python
 import pyesg
 
-# instantiate a new model with the required parameters
+# create a new model with the required parameters
 model = pyesg.GeometricBrownianMotion(mu=0.05, sigma=0.2)
 ```
 
 Generate scenarios by calling the `<model>.scenarios` method. The example below, with 10,000 daily scenarios (2,520,000 values) took just **160 milliseconds** to run!
 
 <details>
-  <summary>The <code>model.scenarios()</code> method:</summary>
+  <summary>Under the hood: <code>model.scenarios()</code></summary>
 
 This method generates scenarios, given the following arguments:
 
@@ -264,4 +264,4 @@ nelson_siegel.predict(np.arange(1, 31, 1))
 </p>
 
 ## License
-Open Source and licensed under MIT, Copyright &copy; 2019 Jason Ash
+Open Source and licensed under MIT, Copyright &copy; 2019-2020 Jason Ash
