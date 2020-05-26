@@ -34,7 +34,7 @@ What can you do with an economic scenario generator? Here are a few examples:
 <details>
   <summary><strong>Simulate an investment portfolio</strong></summary>
 
-  * Generate 1,000 correlated, daily stock prices using the `JointGeometricBrownianMotion` model
+  * Generate 1,000 correlated, daily stock prices
   * Construct a portfolio from the stocks
   * Plot the value of the portfolio over time, and calculate metrics like high, low, max drawdown, etc.
 
@@ -42,8 +42,8 @@ What can you do with an economic scenario generator? Here are a few examples:
 <details>
   <summary><strong>Choose a mortgage</strong></summary>
 
-  * Generate 1,000 30-year, monthly scenarios of mortgage rates using the `CoxIngersollRossProcess` model
-  * Calculate the monthly payment for different types of loans under each scenario:
+  * Generate 1,000 30-year, monthly scenarios of mortgage rates
+  * Calculate the monthly payment for different loans under each scenario:
     - 30-year fixed (lock in the rate today for all 30 years)
     - 15-year fixed (lock in the rate today and pay over 15 years)
     - 10-year adjustable-rate (fixed rate for 10 years, then variable rate for 20 years
@@ -54,7 +54,7 @@ What can you do with an economic scenario generator? Here are a few examples:
 <details>
   <summary><strong>Plan for retirement</strong></summary>
 
-  * Generate 1,000 30-year, monthly scenarios of stock market data using the `GeometricBrownianMotion` model
+  * Generate 1,000 30-year, monthly scenarios of stock market data
   * Generate 1,000 30-year, monthly scenarios of bond fund data
   * Track your portfolio balance as a mix of investments in stocks and bonds
   * Each month, simulate a withdrawal from your portfolio and the growth from your investments
@@ -65,8 +65,8 @@ What can you do with an economic scenario generator? Here are a few examples:
   <summary><strong>Protect your business</strong></summary>
 
   * **Banks**: test whether loan portfolios are resilient to drops in interest rates and higher-than-expected customer refinancing
-  * **Investment managers**: test the impact of market declines on revenue from account-based fees
   * **Insurers**: test whether assets are sufficient to cover liabilities under a wide range of bond market scenarios
+  * **Investment managers**: test the impact of market declines on revenue from account-based fees
   * **Small Businesses**: model customer demand correlated with the stock market to plan for potential downturns
 
 </details>
