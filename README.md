@@ -25,7 +25,52 @@
 
 ---
 
-An economic scenario generator is a tool used to simulate the behavior of financial markets like stocks or interest rates. Economic scenarios help to improve our understanding of the risks inherent in these markets. Actuaries and other financial professionals use economic scenario generators to estimate the potential range of outcomes their businesses might expect in the future.
+### What is an economic scenario generator?
+
+An economic scenario generator simulates the behavior of unpredictable financial markets like stocks, interest rates, or energy prices. It uses mathematical models called _stochastic processes_ to generate thousands of potential scenarios that might occur. The stochastic processes describe the behavior of each market, like whether it generally trends up or down, or how widely its values might change from one day to the next. Then that behavior is combined with a random walk to generate a large number of unique, simulated paths.
+
+### Why are they useful?
+
+Economic scenario generators improve our understanding of the risks within the financial markets. Actuaries and other financial professionals use thousands of scenarios of stocks, interest rates, and other variables to estimate the potential range of outcomes their businesses might expect in the future. For example:
+
+<details>
+  <summary>Simulate a stock index to show how the value of an investment portfolio might change over the next year</summary>
+
+  * Generate 1,000 correlated, daily stock prices using the `JointGeometricBrownianMotion` model
+  * Multiply the stock prices and the portfolio allocation percentages.
+  * Plot the value of the portfolio over time, and calculate metrics like high, low, max drawdown, etc.
+
+</details>
+<details>
+  <summary>Simulate interest rates to help choose a mortgage</summary>
+
+  * Generate 1,000 30-year, monthly scenarios of mortgage rates using the `CoxIngersollRossProcess` model
+  * Calculate the monthly payment for different types of loans under each scenario:
+    - 30-year fixed (lock in the rate today for all 30 years)
+    - 15-year fixed (lock in the rate today and pay over 15 years)
+    - 10-year adjustable-rate (fixed rate for 10 years, then variable rate for 20 years
+    - etc.
+  * Determine which loan fits the best with your budget
+
+</details>
+<details>
+  <summary>Determine how much money you could withdraw from your savings during retirement</summary>
+
+  * Generate 1,000 30-year, monthly scenarios of stock market data using the `GeometricBrownianMotion` model
+  * Generate 1,000 30-year, monthly scenarios of bond fund data
+  * Track your portfolio balance as a mix of investments in stocks and bonds
+  * Each month, simulate a withdrawal from your portfolio
+  * Determine whether you are comfortable withdrawing more or less money each month, and identify the types of market conditions that lead to the best and worst outcomes.
+
+</details>
+<details>
+  <summary>Identify market conditions that put the most stress on your business</summary>
+
+  * A bank could test whether their loan portfolio is resilient to sharp drops in interest rates and higher-than-expected refinancing
+  * An investment advisor that charges fees based on account balances could determine how much their revenue would decrease if the market fell by a certain percent next year.
+  * An insurance company could identify whether its assets would be sufficient to cover liabilities under a wide range of bond market scenarios.
+
+</details>
 
 ## Key Features
 
