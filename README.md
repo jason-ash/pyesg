@@ -27,7 +27,7 @@
 
 ### What is an economic scenario generator?
 
-An economic scenario generator simulates the behavior of unpredictable financial markets like stocks, interest rates, or energy prices. It uses mathematical models called _stochastic processes_ to generate thousands of potential scenarios that might occur. The stochastic processes describe the behavior of each market, like whether it generally trends up or down, or how widely its values might change from one day to the next. Then that behavior is combined with a random walk to generate a large number of unique, simulated paths.
+An economic scenario generator simulates the behavior of unpredictable financial markets like stocks, interest rates, or energy prices. It uses mathematical models called _stochastic processes_ to generate thousands of unique scenarios.
 
 What can you do with an economic scenario generator? Here are a few examples:
 
