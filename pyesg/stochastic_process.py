@@ -146,7 +146,11 @@ class StochasticProcess(ABC):
                 dx = rvs @ self.standard_deviation(x0=x0, dt=dt).transpose(1, 0)
             else:
                 # multiple samples from a joint process
-                dx = np.einsum("ab,acb->ac", rvs, self.standard_deviation(x0, 1.0))
+                # we have rvs as a (samples, dimension) array and standard deviation as
+                # a (samples, dimension, dimension) array. We want to matrix multiply
+                # the rvs (dimension) index with the transposed (dimension, dimension)
+                # standard deviation for each sample to get a (samples, dimension) array
+                dx = np.einsum("ab,acb->ac", rvs, self.standard_deviation(x0=x0, dt=dt))
         return self.apply(self.expectation(x0=x0, dt=dt), dx)
 
     def scenarios(  # pylint: disable=too-many-arguments
