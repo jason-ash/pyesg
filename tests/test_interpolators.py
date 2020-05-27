@@ -8,10 +8,16 @@ from pyesg import NelsonSiegelInterpolator, SvenssonInterpolator
 class TestNelsonSiegelInterpolator(unittest.TestCase):
     """Test Nelson Siegel Interpolator"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.X = np.array([1, 2, 5, 10, 20, 30])
-        self.y = np.array([0.003, 0.007, 0.012, 0.019, 0.028, 0.032])
+    @classmethod
+    def setUpClass(cls):
+        cls.X = np.array([1, 2, 5, 10, 20, 30])
+        cls.y = np.array([0.003, 0.007, 0.012, 0.019, 0.028, 0.032])
+
+    def test_repr(self):
+        """Ensure we have the right repr for the models"""
+        estimator = NelsonSiegelInterpolator()
+        output = "<pyesg.NelsonSiegelInterpolator>"
+        self.assertEqual(estimator.__repr__(), output)
 
     def test_predict_before_fit_error(self):
         """Throw an exception if we try to predict before fitting"""
@@ -33,6 +39,14 @@ class TestNelsonSiegelInterpolator(unittest.TestCase):
         self.assertTrue(hasattr(estimator, "beta1"))
         self.assertTrue(hasattr(estimator, "beta2"))
         self.assertTrue(hasattr(estimator, "tau"))
+
+    def test_predict(self):
+        """Test the model predict function"""
+        estimator = NelsonSiegelInterpolator()
+        estimator.fit(self.X, self.y)
+        expected = estimator.predict(np.array([3, 7, 15]))
+        actual = [0.008234350407893918, 0.015329233891568485, 0.024288715449742704]
+        self.assertListEqual(list(expected), list(actual))
 
 
 class TestSvenssonInterpolator(unittest.TestCase):
