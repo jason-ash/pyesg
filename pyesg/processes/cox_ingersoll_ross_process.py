@@ -24,8 +24,6 @@ class CoxIngersollRossProcess(StochasticProcess):
     array([0.03372067])
     >>> cir.step(x0=[0.03], dt=1.0, random_state=42)
     array([0.03372067])
-    >>> cir.logpdf(x0=0.05, xt=0.02, dt=1.0)
-    array([-18.00904939])
     """
 
     def __init__(self, mu: float, sigma: float, theta: float) -> None:

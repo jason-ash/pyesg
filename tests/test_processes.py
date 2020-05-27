@@ -1,4 +1,5 @@
 """Tests for stochastic processes"""
+from inspect import getfullargspec
 import unittest
 import numpy as np
 import pandas as pd
@@ -23,6 +24,14 @@ class BaseProcessMixin:
     `self.single_x0` and `self.multiple_x0` attributes that define reasonable starting
     value arrays for single start values and multiple start values, respectively.
     """
+
+    def test_coefficient_dictionary(self):
+        """Ensure the coefficient dictionary returns the starting params"""
+        # inspect the __init__ method of the model to extract the coefficients required
+        # to create the model, then confirm they all exist in the "coefs" dictionary.
+        expected = getfullargspec(self.model.__init__).args[1:]
+        actual = list(self.model.coefs().keys())
+        self.assertListEqual(expected, actual)
 
     def test_single_initial_value_drift_shape(self):
         """Ensure the drift has the correct shape for a single start value"""
@@ -153,6 +162,17 @@ class BaseProcessMixin:
             actual = self.model.expectation(x0=x0, dt=1.0)
             expected = np.repeat(actual[0][None, :], 5, axis=0)
         self.assertIsNone(np.testing.assert_array_equal(actual, expected))
+
+    def test_scenario_failed_broadcasting_raises(self):
+        """Ensure we raise a ValueError if the x0 array can't be broadcast"""
+        self.assertRaises(
+            ValueError,
+            self.model.scenarios,
+            self.multiple_x0,  # x0 array
+            1.0,  # dt
+            41,  # number of scenarios, can't be broadcast
+            30,  # n_steps
+        )
 
 
 class TestBlackScholesProcess(BaseProcessMixin, unittest.TestCase):
