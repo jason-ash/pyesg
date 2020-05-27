@@ -45,8 +45,8 @@ class TestNelsonSiegelInterpolator(unittest.TestCase):
         estimator = NelsonSiegelInterpolator()
         estimator.fit(self.X, self.y)
         expected = estimator.predict(np.array([3, 7, 15]))
-        actual = [0.008234350407893918, 0.015329233891568485, 0.024288715449742704]
-        self.assertListEqual(list(expected), list(actual))
+        actual = np.array([0.008234350407870, 0.01532923389080558, 0.02428871544904800])
+        self.assertIsNone(np.testing.assert_array_almost_equal(expected, actual))
 
 
 class TestSvenssonInterpolator(unittest.TestCase):
