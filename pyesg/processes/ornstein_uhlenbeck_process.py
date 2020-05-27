@@ -22,8 +22,6 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
     array([0.0106066])
     >>> ou.step(x0=0.03, dt=1.0, random_state=42)
     array([0.04045071])
-    >>> ou.logpdf(x0=0.05, xt=0.09, dt=1.0)
-    array([-0.27478901])
     """
 
     def __init__(self, mu: float, sigma: float, theta: float) -> None:

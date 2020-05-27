@@ -26,8 +26,6 @@ class GeometricBrownianMotion(StochasticProcess):
     array([1.14934283])
     >>> gbm.step(x0=[1.0], dt=1.0, random_state=42)
     array([1.14934283])
-    >>> gbm.logpdf(x0=1.0, xt=1.1, dt=1.0)
-    array([0.65924938])
     """
 
     def __init__(self, mu: float, sigma: float) -> None:
