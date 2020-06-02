@@ -11,15 +11,22 @@ class GeometricBrownianMotion(StochasticProcess):
 
     Examples
     --------
-    >>> gbm = GeometricBrownianMotion(mu=0.05, sigma=0.2, dividend=0.01)
+    >>> gbm = GeometricBrownianMotion.example()
+    >>> gbm
+    <pyesg.GeometricBrownianMotion(mu=0.05, sigma=0.2, dividend=0.01)>
+
     >>> gbm.drift(10.0)
     array([0.02])
+
     >>> gbm.diffusion(10.0)
     array([0.2])
+
     >>> gbm.expectation(10.0, 0.5)
     array([10.10050167])
+
     >>> gbm.standard_deviation(10.0, 0.5)
     array([0.14142136])
+
     >>> gbm.step(10.0, dt=0.5, random_state=42)
     array([10.83553577])
     """

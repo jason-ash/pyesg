@@ -11,17 +11,25 @@ class CoxIngersollRossProcess(StochasticProcess):
 
     Examples
     --------
-    >>> cir = CoxIngersollRossProcess(mu=0.05, sigma=0.02, theta=0.1)
+    >>> cir = CoxIngersollRossProcess.example()
+    >>> cir
+    <pyesg.CoxIngersollRossProcess(mu=0.05, sigma=0.02, theta=0.1)>
+
     >>> cir.drift(x0=0.045)
     array([0.0005])
+
     >>> cir.diffusion(x0=0.03)
     array([0.0034641])
+
     >>> cir.expectation(x0=0.03, dt=0.5)
     array([0.031])
+
     >>> cir.standard_deviation(x0=0.03, dt=0.5)
     array([0.00244949])
+
     >>> cir.step(x0=0.03, dt=1.0, random_state=42)
     array([0.03372067])
+
     >>> cir.step(x0=[0.03], dt=1.0, random_state=42)
     array([0.03372067])
     """

@@ -11,16 +11,23 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
 
     Examples
     --------
-    >>> ou = OrnsteinUhlenbeckProcess(mu=0.05, sigma=0.015, theta=0.15)
-    >>> ou.drift(x0=0.05)
+    >>> oup = OrnsteinUhlenbeckProcess.example()
+    >>> oup
+    <pyesg.OrnsteinUhlenbeckProcess(mu=0.05, sigma=0.015, theta=0.15)>
+
+    >>> oup.drift(x0=0.05)
     array([0.])
-    >>> ou.diffusion(x0=0.03)
+
+    >>> oup.diffusion(x0=0.03)
     array([0.015])
-    >>> ou.expectation(x0=0.03, dt=0.5)
+
+    >>> oup.expectation(x0=0.03, dt=0.5)
     array([0.0315])
-    >>> ou.standard_deviation(x0=0.03, dt=0.5)
+
+    >>> oup.standard_deviation(x0=0.03, dt=0.5)
     array([0.0106066])
-    >>> ou.step(x0=0.03, dt=1.0, random_state=42)
+
+    >>> oup.step(x0=0.03, dt=1.0, random_state=42)
     array([0.04045071])
     """
 
