@@ -192,10 +192,6 @@ model.standard_deviation(x0=100, dt=1.0)
 ### Equity
 
 <details>
-  <summary>Black Scholes Process</summary>
-</details>
-
-<details>
   <summary>Geometric Brownian Motion</summary>
 </details>
 
