@@ -12,19 +12,25 @@ class WienerProcess(StochasticProcess):
 
     Examples
     --------
-    >>> wp = WienerProcess(mu=0.05, sigma=0.2)
+    >>> wp = WienerProcess.example()
     >>> wp
-    <pyesg.WienerProcess{'mu': 0.05, 'sigma': 0.2}>
+    <pyesg.WienerProcess(mu=0.05, sigma=0.2)>
+
     >>> wp.drift(x0=0.0)
     array([0.05])
+
     >>> wp.diffusion(x0=0.0)
     array([0.2])
+
     >>> wp.expectation(x0=0.0, dt=0.5)
     array([0.025])
+
     >>> wp.standard_deviation(x0=0.0, dt=0.5)
     array([0.14142136])
+
     >>> wp.step(x0=0.0, dt=1.0, random_state=42)
     array([0.14934283])
+
     >>> wp.step(x0=np.array([1.0]), dt=1.0, random_state=42)
     array([1.14934283])
     """

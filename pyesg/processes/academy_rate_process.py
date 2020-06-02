@@ -47,23 +47,28 @@ class AcademyRateProcess(StochasticProcess):
 
     Examples
     --------
-    >>> arp = AcademyRateProcess()
+    >>> arp = AcademyRateProcess.example()
     >>> arp.correlation
     array([[ 1.     , -0.19197,  0.     ],
            [-0.19197,  1.     ,  0.     ],
            [ 0.     ,  0.     ,  1.     ]])
+
     >>> arp.drift(x0=[0.03, 0.0024, 0.03])
     array([ 0.03236509,  0.00207876, -0.02126944])
+
     >>> arp.diffusion(x0=[0.03, 0.0024, 0.03])
     array([[ 0.10392305,  0.        ,  0.        ],
            [-0.00082753,  0.00423055,  0.        ],
            [ 0.        ,  0.        ,  0.39799063]])
+
     >>> arp.expectation(x0=[0.03, 0.0024, 0.03], dt=1./12)
     array([0.03008102, 0.00257323, 0.02994687])
+
     >>> arp.standard_deviation(x0=[0.03, 0.0024, 0.03], dt=1./12)
     array([[ 0.03      ,  0.        ,  0.        ],
            [-0.00023889,  0.00122126,  0.        ],
            [ 0.        ,  0.        ,  0.11489   ]])
+
     >>> arp.step(x0=[0.03, 0.0024, 0.03], dt=1./12, random_state=42)
     array([0.03053263, 0.00228572, 0.03226032])
 

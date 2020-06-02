@@ -42,7 +42,9 @@ class StochasticProcess(ABC):
         self.dim = dim
 
     def __repr__(self) -> str:
-        return f"<pyesg.{self.__class__.__name__}{self.coefs()}>"
+        """Returns a string representation of this model"""
+        params = (f"{k}={repr(v)}" for k, v in self.coefs().items())
+        return f"<pyesg.{self.__class__.__qualname__}({', '.join(params)})>"
 
     @abstractmethod
     def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:

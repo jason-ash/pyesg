@@ -22,6 +22,7 @@ class HestonProcess(StochasticProcess):
     >>> hp = HestonProcess(mu=0.05, kappa=0.8, sigma=0.001, theta=0.05, rho=-0.5)
     >>> hp.drift(x0=[10., 0.04])
     array([0.5  , 0.008])
+
     >>> hp.step(x0=[10., 0.04], dt=0.5, random_state=42)
     array([10.95245989,  0.04394794])
     """
