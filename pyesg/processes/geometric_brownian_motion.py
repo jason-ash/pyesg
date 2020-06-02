@@ -7,7 +7,7 @@ from pyesg.stochastic_process import StochasticProcess
 
 class GeometricBrownianMotion(StochasticProcess):
     """
-    Geometric Brownian Motion: dX = X*exp((μ - (1/2)*σ**2)dt + σdW)
+    Geometric Brownian Motion: dX = X*exp((μ - δ - (1/2)*σ**2)dt + σdW)
 
     Examples
     --------
