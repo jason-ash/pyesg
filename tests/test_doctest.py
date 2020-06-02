@@ -4,7 +4,6 @@ import doctest
 from pyesg import utils
 from pyesg.processes import (
     academy_rate_process,
-    black_scholes_process,
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
     heston_process,
@@ -16,7 +15,6 @@ from pyesg.processes import (
 MODULES = [
     utils,
     academy_rate_process,
-    black_scholes_process,
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
     heston_process,

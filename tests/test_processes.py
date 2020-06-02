@@ -6,7 +6,6 @@ import pandas as pd
 
 from pyesg import (
     AcademyRateProcess,
-    BlackScholesProcess,
     CoxIngersollRossProcess,
     GeometricBrownianMotion,
     HestonProcess,
@@ -173,16 +172,6 @@ class BaseProcessMixin:
             41,  # number of scenarios, can't be broadcast
             30,  # n_steps
         )
-
-
-class TestBlackScholesProcess(BaseProcessMixin, unittest.TestCase):
-    """Test BlackScholesProcess"""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.model = BlackScholesProcess.example()
-        cls.single_x0 = np.array([100.0])
-        cls.multiple_x0 = np.full(50, 100.0)
 
 
 class TestCoxIngersollRossProcess(BaseProcessMixin, unittest.TestCase):

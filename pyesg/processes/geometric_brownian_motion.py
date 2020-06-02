@@ -1,4 +1,4 @@
-"""Geometric Brownian Motion"""
+"""Geometric Brownian Motion / Black Merton Scholes Process"""
 from typing import Dict
 import numpy as np
 
@@ -7,45 +7,42 @@ from pyesg.stochastic_process import StochasticProcess
 
 class GeometricBrownianMotion(StochasticProcess):
     """
-    Geometric Brownian Motion process: dX = μXdt + σXdW
+    Geometric Brownian Motion: dX = X*exp((μ - δ - (1/2)*σ**2)dt + σdW)
 
     Examples
     --------
-    >>> gbm = GeometricBrownianMotion(mu=0.05, sigma=0.2)
-    >>> gbm
-    <pyesg.GeometricBrownianMotion{'mu': 0.05, 'sigma': 0.2}>
-    >>> gbm.drift(x0=2.0)
-    array([0.1])
-    >>> gbm.diffusion(x0=2.0)
-    array([0.4])
-    >>> gbm.expectation(x0=1.0, dt=0.5)
-    array([1.025])
-    >>> gbm.standard_deviation(x0=1.0, dt=0.5)
+    >>> gbm = GeometricBrownianMotion(mu=0.05, sigma=0.2, dividend=0.01)
+    >>> gbm.drift(10.0)
+    array([0.02])
+    >>> gbm.diffusion(10.0)
+    array([0.2])
+    >>> gbm.expectation(10.0, 0.5)
+    array([10.10050167])
+    >>> gbm.standard_deviation(10.0, 0.5)
     array([0.14142136])
-    >>> gbm.step(x0=1.0, dt=1.0, random_state=42)
-    array([1.14934283])
-    >>> gbm.step(x0=[1.0], dt=1.0, random_state=42)
-    array([1.14934283])
+    >>> gbm.step(10.0, dt=0.5, random_state=42)
+    array([10.83553577])
     """
 
-    def __init__(self, mu: float, sigma: float) -> None:
+    def __init__(self, mu: float, sigma: float, dividend: float = 0.0) -> None:
         super().__init__()
         self.mu = mu
         self.sigma = sigma
+        self.dividend = dividend
 
     def coefs(self) -> Dict[str, float]:
-        return dict(mu=self.mu, sigma=self.sigma)
+        return dict(mu=self.mu, sigma=self.sigma, dividend=self.dividend)
 
     def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
-        # arithmetic addition to update x0
-        return x0 + dx
+        return x0 * np.exp(dx)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
-        return self.mu * x0
+        drift = self.mu - self.dividend - 0.5 * self.sigma * self.sigma
+        return np.full_like(x0, drift, dtype=np.float64)
 
     def _diffusion(self, x0: np.ndarray) -> np.ndarray:
-        return self.sigma * x0
+        return np.full_like(x0, self.sigma, dtype=np.float64)
 
     @classmethod
     def example(cls):
-        return cls(mu=0.05, sigma=0.2)
+        return cls(mu=0.05, sigma=0.2, dividend=0.01)
