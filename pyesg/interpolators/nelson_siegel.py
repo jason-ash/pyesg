@@ -8,12 +8,23 @@ from pyesg.interpolator import Interpolator
 
 class NelsonSiegelInterpolator(Interpolator):
     """
-    Nelson-Siegel Curve Interpolator
+    Nelson-Siegel Curve Interpolator, used to interpolate between maturities on a yield
+    curve. This interpolator is defined for a given maturity, t, as:
+
+        y(t) = (
+            β_0
+            + β_1 * ((1 - exp(-t * 𝜏)) / (t * 𝜏))
+            + β_2 * ((1 - exp(-t * 𝜏)) / (t * 𝜏) - exp(-t * 𝜏))
+        )
 
     Parameters
     ----------
-    tau : float, optional, if provided, then this value is not solved when 'fit' is called
+    tau : Optional[float], if provided, this value is not solved when 'fit' is called;
         otherwise, it is considered a free variable as part of the fitting process.
+
+    References
+    ----------
+    https://comisef.eu/files/wps031.pdf
     """
 
     def __init__(self, tau: Optional[float] = None) -> None:
