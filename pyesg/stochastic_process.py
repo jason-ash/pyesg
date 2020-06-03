@@ -143,7 +143,7 @@ class StochasticProcess(ABC):
         Parameters
         ----------
         x0 : Array, either a single start value or array of start values if applicable
-        dt : float, the length between steps
+        dt : float, the length between steps, in years, e.g. 1/12 for monthly steps
         n_scenarios : int, the number of scenarios to generate, e.g. 1000
         n_steps : int, the number of steps in the scenario, e.g. 52. In combination with
             dt, this determines the scope of the scenario, e.g. dt=1/12 and n_step=360
