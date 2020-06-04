@@ -35,20 +35,20 @@ class NelsonSiegelInterpolator(Interpolator):
         self.beta2: Optional[float] = None  # fit parameter
 
     def __call__(
-        self, x: Union[float, np.ndarray], **params
+        self, X: Union[float, np.ndarray], **params
     ) -> Union[float, np.ndarray]:
         """Returns the Nelson-Siegel interpolated value at a point, x"""
         beta0 = params["beta0"]
         beta1 = params["beta1"]
         beta2 = params["beta2"]
         tau = params["tau"]
-        factor = (1 - np.exp(-x * tau)) / (x * tau)
-        return beta0 + beta1 * factor + beta2 * (factor - np.exp(-x * tau))
+        factor = (1 - np.exp(-X * tau)) / (X * tau)
+        return beta0 + beta1 * factor + beta2 * (factor - np.exp(-X * tau))
 
     def coefs(self) -> Dict:
         return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegelInterpolator":
+    def fit(self, X: np.ndarray, y: np.ndarray):
         """
         Fits the Nelson-Siegel interpolator using ordinary least squares
 
