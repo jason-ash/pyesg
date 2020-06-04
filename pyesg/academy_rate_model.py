@@ -13,40 +13,88 @@ import numpy as np
 import pandas as pd
 
 from pyesg.processes.academy_rate_process import AcademyRateProcess
-from pyesg.utils import RandomState
+from pyesg.utils import Array, RandomState
+
+# pylint: disable=too-many-arguments
 
 
-def interpolate(scenarios: np.ndarray, maturities: Optional[list] = None) -> np.ndarray:
+def interpolate(
+    short_rate: np.ndarray,
+    long_rate: np.ndarray,
+    short_maturity: float = 1.0,
+    long_maturity: float = 20.0,
+    interpolated_maturities: Optional[Array] = None,
+    tau: float = 0.4,
+) -> np.ndarray:
     """
-    This model uses a simplified Nelson-Siegel interpolation formula to translate
-    a "short rate" with a duration of 1 year and a "long rate" wtih a duration of
-    20 years into a full yield curve with any number of maturities.Normally, the
-    Nelson-Siegel formula uses β_0, β_1, β_2, and 𝜏 as free variables, but this
-    model sets 𝜏=0.4 and β_2=0, leaving just β_0 and β_1 as free variables. Because
-    we have two rates and two free variables, we solve a system of equations for
-    the values of β_0 and β_1.
+    The American Academy of Actuaries uses a simplified Nelson-Siegel with two free
+    parameters, β_0 and β_1. β_2 is set to zero and 𝜏 is set to 0.4. It is typically
+    calibrated with a 1-year rate and a 20-year rate, which allows us to solve a system
+    of equations for β_0 and β_1. A rate at maturity t, r(t) is equal to:
+
+        r(t) = β_0 + β_1 * (1 - exp(-𝜏 * t)) / (𝜏 * t)
+
+    Parameters
+    ----------
+    short_rate : np.ndarray, an array with shape (n_scenarios, n_steps) that contains
+        the short rate values
+    long_rate : np.ndarray, an array with shape (n_scenarios, n_steps) that contains
+        the long rate values
+    short_rate_maturity : float, default 1.0, the duration of the short rate
+    long_rate_maturity : float, default 20.0, the duration of the short rate
+    interpolated_maturities : Array of floats or ints, determines the interpolated
+        maturities to export. By default, uses [0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30]
+    tau : float, default 0.4, the parameter 𝜏 in the Nelson-Siegel interpolator
+
+    Returns
+    -------
+    rates : np.ndarray, an array of rates with shape (n_scenarios, n_steps, maturities)
     """
+    # the nelson-siegel factor in the equation r(t) = b_0 + b_1 * factor(t)
+    f = lambda t: (1 - np.exp(-tau * t)) / (tau * t)
 
-    def factor(t: float, tau: float = 0.4) -> float:
-        # Nelson-Siegel factor, which varies by maturity and tau
-        return (1 - np.exp(-tau * t)) / (tau * t)
+    # an array of the betas that fit each time step of rates provided
+    betas = np.zeros(shape=(short_rate.shape[0], short_rate.shape[1], 2))
+    betas[:, :, 1] = (long_rate - short_rate) / (f(long_maturity) - f(short_maturity))
+    betas[:, :, 0] = long_rate - betas[:, :, 1] * f(long_maturity)
 
-    def beta(scenarios: np.ndarray) -> np.ndarray:
-        # Returns an array of (n_scenarios, n_steps, 2); columns for β_0 and β_1
-        r20 = scenarios[:, :, 0]
-        r1 = scenarios[:, :, 0] - scenarios[:, :, 1]
+    # finally, we use the nelson-sigel formula to calculate rates at each maturity
+    # if interpolated maturities weren't explicitly provided, then we use the defaultsk
+    default_maturities = [0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30]
+    interpolated_maturities = interpolated_maturities or default_maturities
 
-        betas = np.zeros(shape=scenarios[:, :, :2].shape)
-        betas[:, :, 1] = (r20 - r1) / (factor(20) - factor(1))
-        betas[:, :, 0] = r20 - betas[:, :, 1] * factor(20)
-        return betas
+    maturities = f(np.array(interpolated_maturities))
+    maturities = np.vstack([np.ones_like(maturities), maturities])
+    return betas @ maturities
 
-    # what yield curve maturities do we want to end up with? The Academy uses these
-    # 10 values, which will be used, unless overwritten by the user
-    maturities = [0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30] or maturities
-    mat_array = factor(np.array(maturities))
-    mat_array = np.vstack([np.ones_like(mat_array), mat_array])
-    return beta(scenarios) @ mat_array
+
+def perturb(
+    scenarios: np.ndarray, n_steps: int, yield_curve: Optional[np.ndarray] = None
+) -> np.ndarray:
+    """
+    The Academy model "perturbs" scenarios in the first several periods so that they
+    match more closely to the starting yield curve today. The default model uses monthly
+    time steps, and perturbs values according to a decreasing factor for each month in
+    the first projection year.
+
+    Parameters
+    ----------
+    scenarios : np.ndarray, a rates array with shape (n_scenarios, n_steps, maturities)
+    yield_curve : np.ndarray, a yield curve array with shape (maturities) representing
+        the current interest rate curve.
+
+    Returns
+    -------
+    rates : np.ndarray, an array of rates with shape (n_scenarios, n_steps, maturities)
+    """
+    factor_array = np.zeros(shape=(scenarios.shape[0], scenarios.shape[1], 1))
+    factor = np.arange(n_steps, 0, -1) / n_steps
+    factor_array[:, :n_steps, :] = factor[None, :, None]
+
+    difference = scenarios[:, 0, :] - yield_curve
+
+    perturbation = factor_array * difference[:, None, :]
+    return scenarios - perturbation
 
 
 class AcademyRateModel:
@@ -64,9 +112,9 @@ class AcademyRateModel:
 
     Examples
     --------
-    >>> model = AcademyRateModel(long_rate=0.0225, spread=0.0066, volatility=0.0287)
+    >>> model = AcademyRateModel()
     >>> model
-    <pyesg.AcademyRateModel(long_rate=0.0225, spread=0.0066, volatility=0.0287)>
+    <pyesg.AcademyRateModel>
     """
 
     def __init__(self, volatility: float = 0.0287) -> None:
@@ -110,44 +158,15 @@ class AcademyRateModel:
 
     def __repr__(self) -> str:
         """Returns a string representation of this model"""
-        coefs = dict(
-            long_rate=self.long_rate, spread=self.spread, volatility=self.volatility
-        )
-        params = (f"{k}={repr(v)}" for k, v in coefs.items())
-        return f"<pyesg.{self.__class__.__qualname__}({', '.join(params)})>"
-
-    def perturb(self, scenarios: np.ndarray, floor: float = 0.0001) -> np.ndarray:
-        """
-        Handles the perturbing function from the model for the first 12 months of the
-        projection, where scenarios have already been interpolated.
-        """
-        perturbation_coefficient = np.zeros(shape=scenarios[:, :, :1].shape)
-        vals = np.arange(12, 0, -1) / 12
-        perturbation_coefficient[:, :12, :] = vals[None, :, None]
-
-        perturbation_value = scenarios[:, 0, :] - self.yield_curve.values
-
-        perturbation = perturbation_coefficient * perturbation_value[:, None, :]
-        return np.maximum(floor, scenarios - perturbation)
-
-    def _scenarios(
-        self, dt: float, n_scenarios: int, n_steps: int, random_state: RandomState
-    ) -> np.ndarray:
-        """
-        Returns the raw scenarios from the AcademyRateProcess, without any interpolation
-        or perturbation. Intentionally "hidden" with the leading underscore because the
-        primary scenarios should have interpolation and perturbation by default.
-        """
-        return self.process.scenarios(
-            x0=[self.long_rate, self.spread, self.volatility],
-            dt=dt,
-            n_scenarios=n_scenarios,
-            n_steps=n_steps,
-            random_state=random_state,
-        )
+        return f"<pyesg.{self.__class__.__qualname__}>"
 
     def scenarios(
-        self, n_scenarios: int, n_steps: int, random_state: RandomState
+        self,
+        dt: float,
+        n_scenarios: int,
+        n_steps: int,
+        floor: float = 0.0001,
+        random_state: RandomState = None,
     ) -> np.ndarray:
         """
         Generate scenarios using this model. The returned scenarios will be interpolated
@@ -170,11 +189,30 @@ class AcademyRateModel:
         scenarios : np.ndarray, will have shape (n_scenarios, n_steps + 1, 10), where 10
             represents 10 points on the yield curve for each scenario.
         """
-        # can only handle dt = monthly right now
-        dt = 1 / 12
-
-        scenarios = self._scenarios(
-            dt=dt, n_scenarios=n_scenarios, n_steps=n_steps, random_state=random_state
+        # create the raw scenarios from the underlying AcademyRateProcess, which outputs
+        # an array with shape: (n_scenarios, n_steps, [long_rate, spread, volatility])
+        scenarios = self.process.scenarios(
+            x0=[self.long_rate, self.spread, self.volatility],
+            dt=dt,
+            n_scenarios=n_scenarios,
+            n_steps=n_steps,
+            random_state=random_state,
         )
-        interpolated_scenarios = interpolate(scenarios)
-        return self.perturb(interpolated_scenarios)
+
+        # interpolate the short and long rates into a full yield curve across a default
+        # range of maturities from 0.25 years to 30 years.
+        interpolated_scenarios = interpolate(
+            short_rate=scenarios[:, :, 0] - scenarios[:, :, 1],
+            long_rate=scenarios[:, :, 0],
+        )
+
+        # "perturb" the scenarios by reducing the difference between the starting yield
+        # curve and the generated scenarios during the first year.
+        perturbed_scenarios = perturb(
+            scenarios=interpolated_scenarios,
+            n_steps=int(1 / dt),
+            yield_curve=self.yield_curve.values,
+        )
+
+        # floor the scenarios before returning; default is 0.0001
+        return np.maximum(floor, perturbed_scenarios)
