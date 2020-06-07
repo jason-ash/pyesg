@@ -180,19 +180,15 @@ class BaseProcessMixin:
         # for 100 scenarios and 30 timesteps will be generated 30 at a time, populating
         # each time step of each scenario in a row. To test this, we generate an array
         # of random variables, then reshape it to check that it matches what we expect.
-        n_scenarios, n_steps, random_state = 1000, 120, 123
-        if self.model.dim == 1:
-            expected = self.model.dW.rvs(
-                size=n_scenarios * n_steps, random_state=random_state
-            )
-            expected = expected.reshape(n_scenarios, n_steps, order="F")
+        scen, step, state, dim = 1000, 120, 123, self.model.dim
+        if dim == 1:
+            expected = self.model.dW.rvs(size=scen * step, random_state=state)
+            expected = expected.reshape(scen, step, order="F")
         else:
-            expected = self.model.dW.rvs(
-                size=n_scenarios * n_steps * self.model.dim, random_state=random_state
-            )
-            expected = expected.reshape(n_scenarios * n_steps, self.model.dim)
-            expected = expected.reshape(n_scenarios, n_steps, self.model.dim, order="F")
-        actual = self.model.rvs(n_scenarios, n_steps, random_state)
+            expected = self.model.dW.rvs(size=scen * step * dim, random_state=state)
+            expected = expected.reshape(scen * step, dim)
+            expected = expected.reshape(scen, step, dim, order="F")
+        actual = self.model.rvs(scen, step, state)
         self.assertIsNone(np.testing.assert_array_equal(actual, expected))
 
 

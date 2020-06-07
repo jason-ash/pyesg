@@ -101,21 +101,27 @@ class StochasticProcess(ABC):
     ) -> np.ndarray:
         """
         Returns the array of random variates used to generate a batch of scenarios with
-        shape (n_scenarios, n_steps, self.dim)
-        """
-        if self.dim == 1:
-            rvs = np.zeros(shape=(n_scenarios, n_steps))
-        else:
-            rvs = np.zeros(shape=(n_scenarios, n_steps, self.dim))
+        shape (n_scenarios, n_steps, self.dim). If dim == 1, then the third dimension
+        will be squeezed, so the returned array will have shape (n_scenarios, n_steps).
 
+        Parameters
+        ----------
+        n_scenarios : int, the number of scenarios to generate, e.g. 1000
+        n_steps : int, the number of steps in the scenario, e.g. 52
+        random_state : Union[int, np.random.RandomState, None], either an integer seed
+            or a numpy RandomState object directly, if reproducibility is desired
+
+        Returns
+        -------
+        rvs : np.ndarray, an array of the random variates used to generate scenarios
+        """
+        rvs = np.zeros(shape=(n_scenarios, n_steps, self.dim))
         for i in range(n_steps):
             random_state = check_random_state(random_state)
-            if self.dim == 1:
-                rvs[:, i] = self.dW.rvs(size=n_scenarios, random_state=random_state)
-            else:
-                size = (n_scenarios, self.dim)
-                rvs[:, i, :] = self.dW.rvs(size=size, random_state=random_state)
-        return rvs
+            rvs[:, i, :] = self.dW.rvs(
+                size=(n_scenarios, self.dim), random_state=random_state
+            )
+        return rvs.squeeze()
 
     def step(
         self, x0: Array, dt: float, random_state: RandomState = None
