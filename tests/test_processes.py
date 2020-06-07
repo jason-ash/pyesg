@@ -173,6 +173,28 @@ class BaseProcessMixin:
             30,  # n_steps
         )
 
+    def test_rvs(self):
+        """Ensure the array of random variates matches what we expect"""
+        # scenarios are generated sequentially by time step, so the number of scenarios
+        # impacts where the array of random variates goes. For example, an array of rvs
+        # for 100 scenarios and 30 timesteps will be generated 30 at a time, populating
+        # each time step of each scenario in a row. To test this, we generate an array
+        # of random variables, then reshape it to check that it matches what we expect.
+        n_scenarios, n_steps, random_state = 1000, 120, 123
+        if self.model.dim == 1:
+            expected = self.model.dW.rvs(
+                size=n_scenarios * n_steps, random_state=random_state
+            )
+            expected = expected.reshape(n_scenarios, n_steps, order="F")
+        else:
+            expected = self.model.dW.rvs(
+                size=n_scenarios * n_steps * self.model.dim, random_state=random_state
+            )
+            expected = expected.reshape(n_scenarios * n_steps, self.model.dim)
+            expected = expected.reshape(n_scenarios, n_steps, self.model.dim, order="F")
+        actual = self.model.rvs(n_scenarios, n_steps, random_state)
+        self.assertIsNone(np.testing.assert_array_equal(actual, expected))
+
 
 class TestCoxIngersollRossProcess(BaseProcessMixin, unittest.TestCase):
     """Test CoxIngersollRossProcess"""
