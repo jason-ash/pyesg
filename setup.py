@@ -7,7 +7,7 @@ with open("README.md") as f:
 
 setup(
     name="pyesg",
-    version="0.1.3",
+    version="0.1.4",
     description="Economic Scenario Generator for Python",
     long_description=README,
     long_description_content_type="text/markdown",
