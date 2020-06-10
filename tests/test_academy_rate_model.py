@@ -2,7 +2,9 @@
 import unittest
 import numpy as np
 
+from pyesg import AcademyRateProcess
 from pyesg.academy_rate_model import interpolate, perturb, AcademyRateModel
+from pyesg.datasets import load_academy_sample_scenario
 
 
 class TestAcademyRateModel(unittest.TestCase):
@@ -11,6 +13,7 @@ class TestAcademyRateModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.model = AcademyRateModel()
+        cls.test_scenario = load_academy_sample_scenario()
 
     def test_interpolate(self):
         """Ensure the interpolate function works as expected"""
@@ -42,3 +45,21 @@ class TestAcademyRateModel(unittest.TestCase):
         """Ensure the scenarios method produces the right shape"""
         scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=10, n_steps=30)
         self.assertEqual(scenarios.shape, (10, 31, 10))
+
+    def test_scenario_values(self):
+        """Compare the pyesg model vs. a single scenario from the AAA Excel model"""
+        model = AcademyRateModel(volatility=self.test_scenario["volatility"])
+        model.yield_curve = self.test_scenario["yield_curve"]
+        model.process = AcademyRateProcess(**self.test_scenario["process_parameters"])
+        scenario = model.scenarios(
+            dt=self.test_scenario["dt"],
+            n_scenarios=self.test_scenario["n_scenarios"],
+            n_steps=self.test_scenario["n_steps"],
+            floor=self.test_scenario["floor"],
+            random_state=self.test_scenario["random_state"],
+        )
+        self.assertIsNone(
+            np.testing.assert_array_almost_equal(
+                self.test_scenario["sample_scenario"], scenario[0]
+            )
+        )
