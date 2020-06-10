@@ -1,4 +1,6 @@
 """Top level imports"""
+from pyesg.academy_rate_model import AcademyRateModel
+
 from pyesg.interpolators.nelson_siegel import NelsonSiegelInterpolator
 from pyesg.interpolators.svensson import SvenssonInterpolator
 
@@ -11,6 +13,7 @@ from pyesg.processes.wiener_process import JointWienerProcess, WienerProcess
 
 
 __all__ = [
+    "AcademyRateModel",
     "NelsonSiegelInterpolator",
     "SvenssonInterpolator",
     "AcademyRateProcess",

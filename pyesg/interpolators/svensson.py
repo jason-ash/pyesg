@@ -34,7 +34,7 @@ class SvenssonInterpolator(Interpolator):
         self.beta3: Optional[float] = None  # fit parameter
 
     def __call__(
-        self, x: Union[float, np.ndarray], **params
+        self, X: Union[float, np.ndarray], **params
     ) -> Union[float, np.ndarray]:
         beta0 = params["beta0"]
         beta1 = params["beta1"]
@@ -42,13 +42,13 @@ class SvenssonInterpolator(Interpolator):
         beta3 = params["beta3"]
         tau0 = params["tau0"]
         tau1 = params["tau1"]
-        factor0 = (1 - np.exp(-x * tau0)) / (x * tau0)
-        factor1 = (1 - np.exp(-x * tau1)) / (x * tau1)
+        factor0 = (1 - np.exp(-X * tau0)) / (X * tau0)
+        factor1 = (1 - np.exp(-X * tau1)) / (X * tau1)
         return (
             beta0
             + beta1 * factor0
-            + beta2 * (factor0 - np.exp(-x * tau0))
-            + beta3 * (factor1 - np.exp(-x * tau1))
+            + beta2 * (factor0 - np.exp(-X * tau0))
+            + beta3 * (factor1 - np.exp(-X * tau1))
         )
 
     def coefs(self) -> Dict:
@@ -61,7 +61,7 @@ class SvenssonInterpolator(Interpolator):
             tau1=self.tau1,
         )
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "SvenssonInterpolator":
+    def fit(self, X: np.ndarray, y: np.ndarray):
         """
         Fits the Nelson-Siegel-Svensson interpolator using ordinary least squares
 

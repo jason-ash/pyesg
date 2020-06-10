@@ -8,15 +8,15 @@ class Interpolator(ABC):
     """Abstract base class for Interpolators"""
 
     def __repr__(self) -> str:
-        return f"<pyesg.{self.__class__.__name__}>"
+        return f"<pyesg.{self.__class__.__qualname__}>"
 
     @abstractmethod
     def __call__(
-        self, x: Union[float, np.ndarray], **params
+        self, X: Union[float, np.ndarray], **params
     ) -> Union[float, np.ndarray]:
-        """Returns the Interpolator estimate of a rate at maturity x"""
+        """Returns the Interpolator estimate of a rate at maturity X"""
 
-    def _is_fit(self) -> bool:
+    def is_fit(self) -> bool:
         """Returns a boolean indicating whether the model parameters have been fit"""
         return all(self.coefs().values())
 
@@ -42,8 +42,8 @@ class Interpolator(ABC):
         self : returns an instance of self
         """
 
-    def predict(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """Returns the predicted values from an array of independent values"""
-        if self._is_fit():
-            return self(x, **self.coefs())
+        if self.is_fit():
+            return self(X, **self.coefs())
         raise RuntimeError("Must call 'fit' first!")
