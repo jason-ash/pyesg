@@ -3,7 +3,12 @@ import unittest
 import numpy as np
 
 from pyesg import AcademyRateProcess
-from pyesg.academy_rate_model import interpolate, perturb, AcademyRateModel
+from pyesg.academy_rate_model import (
+    interpolate,
+    perturb,
+    significance_value,
+    AcademyRateModel,
+)
 from pyesg.datasets import load_academy_sample_scenario
 
 
@@ -61,5 +66,24 @@ class TestAcademyRateModel(unittest.TestCase):
         self.assertIsNone(
             np.testing.assert_array_almost_equal(
                 self.test_scenario["sample_scenario"], scenario[0]
+            )
+        )
+
+    def test_scenario_significance_value(self):
+        """Ensure the scenario significance value matches what we expect"""
+        model = AcademyRateModel(volatility=self.test_scenario["volatility"])
+        model.yield_curve = self.test_scenario["yield_curve"]
+        model.process = AcademyRateProcess(**self.test_scenario["process_parameters"])
+        scenario = model.scenarios(
+            dt=self.test_scenario["dt"],
+            n_scenarios=self.test_scenario["n_scenarios"],
+            n_steps=self.test_scenario["n_steps"],
+            floor=self.test_scenario["floor"],
+            random_state=self.test_scenario["random_state"],
+        )
+        significance = significance_value(scenario)
+        self.assertIsNone(
+            np.testing.assert_array_almost_equal(
+                self.test_scenario["sample_scenario_significance_value"], significance
             )
         )

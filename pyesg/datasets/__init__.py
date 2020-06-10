@@ -1,7 +1,7 @@
 """Utility functions for loading useful datasets"""
 import pathlib
 from typing import Any, Dict, Union
-
+import numpy as np
 import pandas as pd
 
 
@@ -67,6 +67,7 @@ def load_academy_sample_scenario() -> Dict[str, Any]:
     output["floor"] = 0.0001
     output["random_state"] = 42
     output["sample_scenario"] = _read_data("academy_sample_scenario.csv", header=None)
+    output["sample_scenario_significance_value"] = np.array([12.03111627])
     return output
 
 

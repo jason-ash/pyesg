@@ -100,6 +100,30 @@ def perturb(
     return scenarios - perturbation
 
 
+def significance_value(scenarios: np.ndarray) -> np.ndarray:
+    """
+    Returns the scenario significance value for an array of scenarios with shape
+    (n_scenarios, n_steps, maturities). Returns an array with shape (n_scenarios,) where
+    each value in the array is the significance value of each scenario.
+
+    Parameters
+    ----------
+    scenarios : np.ndarray, a rates array with shape (n_scenarios, n_steps, maturities)
+
+    Returns
+    -------
+    significance : np.ndarray, an array of significance values per scenario, with shape
+        (n_scenarios,)
+    """
+    # this is an array of discount factors based on the 20-year rate of the scenarios
+    # for now assume the 20 year rate is the second-to-last column in the scenario array
+    # TODO : update this to dynamically handle which column to use
+    discount_factor = (1 + scenarios[:, :, -2] / 2) ** (-1 / 3)
+    discount_factor[:, 0] = 1.0
+    discount_factor = discount_factor.cumprod(axis=1).cumsum(axis=1) - 1.0
+    return discount_factor[:, -1] ** 0.5
+
+
 class AcademyRateModel:
     """
     This class implements the American Academy of Actuaries stochastic rate model.
