@@ -59,9 +59,10 @@ def interpolate(
     betas[:, :, 0] = long_rate - betas[:, :, 1] * f(long_maturity)
 
     # finally, we use the nelson-sigel formula to calculate rates at each maturity
-    # if interpolated maturities weren't explicitly provided, then we use the defaultsk
-    default_maturities = [0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30]
-    interpolated_maturities = interpolated_maturities or default_maturities
+    # if interpolated maturities weren't explicitly provided, then we use the defaults
+    if interpolated_maturities is None:
+        # if this value wasn't provided, use the standard defaults from the AAA
+        interpolated_maturities = [0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30]
 
     maturities = f(np.array(interpolated_maturities))
     maturities = np.vstack([np.ones_like(maturities), maturities])
@@ -80,6 +81,8 @@ def perturb(
     Parameters
     ----------
     scenarios : np.ndarray, a rates array with shape (n_scenarios, n_steps, maturities)
+    n_steps : int, the number of time steps over which the perturbations should occur,
+        e.g. 12 in a monthly projection to grade rates over the first projection year.
     yield_curve : np.ndarray, a yield curve array with shape (maturities) representing
         the current interest rate curve.
 
