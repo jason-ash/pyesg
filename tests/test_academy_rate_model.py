@@ -6,7 +6,8 @@ from pyesg import AcademyRateProcess
 from pyesg.academy_rate_model import (
     interpolate,
     perturb,
-    significance_value,
+    scenario_rank,
+    scenario_significance_value,
     AcademyRateModel,
 )
 from pyesg.datasets import load_academy_sample_scenario
@@ -51,6 +52,18 @@ class TestAcademyRateModel(unittest.TestCase):
         scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=10, n_steps=30)
         self.assertEqual(scenarios.shape, (10, 31, 10))
 
+    def test_scenario_significance_shape(self):
+        """Ensure the scenario significance array has the right shape"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=10, n_steps=30)
+        significance = scenario_significance_value(scenarios)
+        self.assertEqual((10,), significance.shape)
+
+    def test_scenario_rank_shape(self):
+        """Ensure the scenario rank array has the right shape"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=10, n_steps=30)
+        rank = scenario_rank(scenarios)
+        self.assertEqual((10,), rank.shape)
+
     def test_scenario_values(self):
         """Compare the pyesg model vs. a single scenario from the AAA Excel model"""
         model = AcademyRateModel(volatility=self.test_scenario["volatility"])
@@ -81,7 +94,7 @@ class TestAcademyRateModel(unittest.TestCase):
             floor=self.test_scenario["floor"],
             random_state=self.test_scenario["random_state"],
         )
-        significance = significance_value(scenario)
+        significance = scenario_significance_value(scenario)
         self.assertIsNone(
             np.testing.assert_array_almost_equal(
                 self.test_scenario["sample_scenario_significance_value"], significance
