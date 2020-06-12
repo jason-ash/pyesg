@@ -100,6 +100,91 @@ def perturb(
     return scenarios - perturbation
 
 
+def scenario_significance_value(scenarios: np.ndarray) -> np.ndarray:
+    """
+    Returns the scenario significance value for an array of scenarios with shape
+    (n_scenarios, n_steps, maturities). Returns an array with shape (n_scenarios,) where
+    each value in the array is the significance value of each scenario.
+
+    Parameters
+    ----------
+    scenarios : np.ndarray, a rates array with shape (n_scenarios, n_steps, maturities)
+
+    Returns
+    -------
+    significance : np.ndarray, an array of significance values per scenario, with shape
+        (n_scenarios,)
+    """
+    # this is an array of discount factors based on the 20-year rate of the scenarios
+    # for now assume the 20 year rate is the second-to-last column in the scenario array
+    # TODO : update this to dynamically handle which column to use
+    discount_factor = (1 + scenarios[:, :, -2] / 2) ** (-1 / 3)
+    discount_factor[:, 0] = 1.0
+    discount_factor = discount_factor.cumprod(axis=1).cumsum(axis=1) - 1.0
+    return discount_factor[:, -1] ** 0.5
+
+
+def scenario_rank(scenarios: np.ndarray) -> np.ndarray:
+    """
+    Returns an array with the rank ordering of a batch of scenarios. The scenarios must
+    have shape (n_scenarios, n_steps, maturities), and the returned array will have
+    shape (n_scenarios,). The scenarios are ranked based on significance values, ordered
+    from highest (rank 1 / N) to lowest (rank N / N).
+
+    Parameters
+    ----------
+    scenarios : np.ndarray, a rates array with shape (n_scenarios, n_steps, maturities)
+
+    Returns
+    -------
+    rank : np.ndarray, an array with each scenario's rank, with shape (n_scenarios,)
+    """
+    # we just rank scenarios from highest value to lowest value based on significance
+    # np.argsort ranks lowest to highest by default, so we negate the original arrray
+    significance = scenario_significance_value(scenarios)
+    return (-1 * significance).argsort()
+
+
+def scenario_subset(scenarios: np.ndarray, size: int) -> np.ndarray:
+    """
+    Returns a subset of scenarios from a scenario array. This was originally intended to
+    take a set of 10,000 scenarios and return subsets of 50, 200, 500, and 1000, but can
+    be more flexible, provided the size parameter evenly divides the number of scenarios
+    in the file.
+
+    The algorithm ranks each scenario based on its significance value from highest to
+    lowest. Then it takes every Nth scenario in order to retrieve the desired subset.
+
+    For example, if you start with 10,000 scenarios and want to pick a representative
+    sample of 50, we take ranked scenario 100, 300, 500, ..., 9900. For 200 scenarios we
+    take ranked scenario 25, 75, 125, 175, 225, ..., 9975.
+
+    Parameters
+    ----------
+    scenarios : np.ndarray, a rates array with shape (n_scenarios, n_steps, maturities)
+
+    Returns
+    -------
+    subset : np.ndarray, a subset of the original scenarios array with a new shape of
+        (size, n_steps, maturities)
+    """
+    # we are indexing the "ranks" array, choosing evenly spaced scenarios based on rank
+    # if we find that the resulting array doesn't meet the size, then we raise an error
+    n_scenarios = scenarios.shape[0]
+    if n_scenarios < size:
+        raise RuntimeError(
+            f"Incompatible subset request: {size} scenarios from {n_scenarios} total."
+        )
+    start, step = n_scenarios // size // 2, n_scenarios // size
+    idx = np.arange(start, n_scenarios, step)
+    if len(idx) != size:
+        raise RuntimeError(
+            f"Incompatible subset request: {size} scenarios from {n_scenarios} total."
+        )
+    ranks = scenario_rank(scenarios)
+    return scenarios[ranks[idx], :, :]
+
+
 class AcademyRateModel:
     """
     This class implements the American Academy of Actuaries stochastic rate model.

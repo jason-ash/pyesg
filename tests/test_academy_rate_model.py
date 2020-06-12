@@ -3,7 +3,14 @@ import unittest
 import numpy as np
 
 from pyesg import AcademyRateProcess
-from pyesg.academy_rate_model import interpolate, perturb, AcademyRateModel
+from pyesg.academy_rate_model import (
+    interpolate,
+    perturb,
+    scenario_rank,
+    scenario_significance_value,
+    scenario_subset,
+    AcademyRateModel,
+)
 from pyesg.datasets import load_academy_sample_scenario
 
 
@@ -46,6 +53,18 @@ class TestAcademyRateModel(unittest.TestCase):
         scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=10, n_steps=30)
         self.assertEqual(scenarios.shape, (10, 31, 10))
 
+    def test_scenario_significance_shape(self):
+        """Ensure the scenario significance array has the right shape"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=10, n_steps=30)
+        significance = scenario_significance_value(scenarios)
+        self.assertEqual((10,), significance.shape)
+
+    def test_scenario_rank_shape(self):
+        """Ensure the scenario rank array has the right shape"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=10, n_steps=30)
+        rank = scenario_rank(scenarios)
+        self.assertEqual((10,), rank.shape)
+
     def test_scenario_values(self):
         """Compare the pyesg model vs. a single scenario from the AAA Excel model"""
         model = AcademyRateModel(volatility=self.test_scenario["volatility"])
@@ -63,3 +82,44 @@ class TestAcademyRateModel(unittest.TestCase):
                 self.test_scenario["sample_scenario"], scenario[0]
             )
         )
+
+    def test_scenario_significance_value(self):
+        """Ensure the scenario significance value matches what we expect"""
+        model = AcademyRateModel(volatility=self.test_scenario["volatility"])
+        model.yield_curve = self.test_scenario["yield_curve"]
+        model.process = AcademyRateProcess(**self.test_scenario["process_parameters"])
+        scenario = model.scenarios(
+            dt=self.test_scenario["dt"],
+            n_scenarios=self.test_scenario["n_scenarios"],
+            n_steps=self.test_scenario["n_steps"],
+            floor=self.test_scenario["floor"],
+            random_state=self.test_scenario["random_state"],
+        )
+        significance = scenario_significance_value(scenario)
+        self.assertIsNone(
+            np.testing.assert_array_almost_equal(
+                self.test_scenario["sample_scenario_significance_value"], significance
+            )
+        )
+
+    def test_scenario_subset_shape(self):
+        """Ensure the scenario subset has the right shape"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=100, n_steps=30)
+        subset = scenario_subset(scenarios, 50)
+        self.assertEqual(50, len(subset))
+
+    def test_scenario_subset_ranks(self):
+        """Ensure the subset of scenarios has the right rankings"""
+        # we'll sample 50 scenarios from a batch of 100, expecting every odd numbered
+        # rank, like 1, 3, 5, ... 99.
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=100, n_steps=30)
+        ranks = scenario_rank(scenarios)
+        expected = scenarios[ranks[np.arange(1, 100, 2)], :, :]
+        actual = scenario_subset(scenarios, 50)
+        self.assertIsNone(np.testing.assert_array_equal(actual, expected))
+
+    def test_scenario_subset_error(self):
+        """Ensure we raise an error if we can't return a subset of scenarios"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=100, n_steps=30)
+        self.assertRaises(RuntimeError, scenario_subset, scenarios, 47)
+        self.assertRaises(RuntimeError, scenario_subset, scenarios, 150)
