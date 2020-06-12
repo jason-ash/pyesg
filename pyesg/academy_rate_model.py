@@ -171,6 +171,10 @@ def scenario_subset(scenarios: np.ndarray, size: int) -> np.ndarray:
     # we are indexing the "ranks" array, choosing evenly spaced scenarios based on rank
     # if we find that the resulting array doesn't meet the size, then we raise an error
     n_scenarios = scenarios.shape[0]
+    if n_scenarios < size:
+        raise RuntimeError(
+            f"Incompatible subset request: {size} scenarios from {n_scenarios} total."
+        )
     start, step = n_scenarios // size // 2, n_scenarios // size
     idx = np.arange(start, n_scenarios, step)
     if len(idx) != size:

@@ -8,6 +8,7 @@ from pyesg.academy_rate_model import (
     perturb,
     scenario_rank,
     scenario_significance_value,
+    scenario_subset,
     AcademyRateModel,
 )
 from pyesg.datasets import load_academy_sample_scenario
@@ -100,3 +101,25 @@ class TestAcademyRateModel(unittest.TestCase):
                 self.test_scenario["sample_scenario_significance_value"], significance
             )
         )
+
+    def test_scenario_subset_shape(self):
+        """Ensure the scenario subset has the right shape"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=100, n_steps=30)
+        subset = scenario_subset(scenarios, 50)
+        self.assertEqual(50, len(subset))
+
+    def test_scenario_subset_ranks(self):
+        """Ensure the subset of scenarios has the right rankings"""
+        # we'll sample 50 scenarios from a batch of 100, expecting every odd numbered
+        # rank, like 1, 3, 5, ... 99.
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=100, n_steps=30)
+        ranks = scenario_rank(scenarios)
+        expected = scenarios[ranks[np.arange(1, 100, 2)], :, :]
+        actual = scenario_subset(scenarios, 50)
+        self.assertIsNone(np.testing.assert_array_equal(actual, expected))
+
+    def test_scenario_subset_error(self):
+        """Ensure we raise an error if we can't return a subset of scenarios"""
+        scenarios = self.model.scenarios(dt=1 / 12, n_scenarios=100, n_steps=30)
+        self.assertRaises(RuntimeError, scenario_subset, scenarios, 47)
+        self.assertRaises(RuntimeError, scenario_subset, scenarios, 150)
