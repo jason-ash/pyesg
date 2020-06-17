@@ -8,11 +8,12 @@ from pyesg.processes.academy_rate_process import AcademyRateProcess
 from pyesg.processes.cox_ingersoll_ross_process import CoxIngersollRossProcess
 from pyesg.processes.geometric_brownian_motion import GeometricBrownianMotion
 from pyesg.processes.heston_process import HestonProcess
+from pyesg.processes.ho_lee_process import HoLeeProcess
 from pyesg.processes.ornstein_uhlenbeck_process import OrnsteinUhlenbeckProcess
 from pyesg.processes.wiener_process import JointWienerProcess, WienerProcess
 
 
-__all__ = [
+__all__ = (
     "AcademyRateModel",
     "NelsonSiegelInterpolator",
     "SvenssonInterpolator",
@@ -20,10 +21,11 @@ __all__ = [
     "CoxIngersollRossProcess",
     "GeometricBrownianMotion",
     "HestonProcess",
+    "HoLeeProcess",
     "OrnsteinUhlenbeckProcess",
     "JointWienerProcess",
     "WienerProcess",
-]
+)
 
 
 __version__ = "0.1.4"
