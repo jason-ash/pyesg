@@ -11,27 +11,27 @@ class HoLeeProcess(StochasticProcess):
 
     Examples
     --------
-    >>> hlp = HoLee.example()
+    >>> hlp = HoLeeProcess.example()
     >>> hlp
-    <pyesg.HoLeeProcess(sigma=0.02, theta=0.005)>
+    <pyesg.HoLeeProcess(sigma=0.015, theta=0.005)>
 
     >>> hlp.drift(x0=0.045)
     array([0.005])
 
     >>> hlp.diffusion(x0=0.045)
-    array([0.02])
+    array([0.015])
 
     >>> hlp.expectation(x0=0.03, dt=0.5)
     array([0.0325])
 
     >>> hlp.standard_deviation(x0=0.03, dt=0.5)
-    array([0.01])
+    array([0.0106066])
 
     >>> hlp.step(x0=0.03, dt=1.0, random_state=42)
-    array([0.03372067])
+    array([0.04245071])
 
-    >>> hlp.step(x0=[0.03], dt=1.0, random_state=42)
-    array([0.03372067])
+    >>> hlp.step(x0=[0.03, 0.03], dt=1.0, random_state=42)
+    array([0.04245071, 0.03292604])
     """
 
     def __init__(self, sigma: float, theta: float) -> None:
@@ -54,4 +54,4 @@ class HoLeeProcess(StochasticProcess):
 
     @classmethod
     def example(cls):
-        return cls(sigma=0.02, theta=0.005)
+        return cls(sigma=0.015, theta=0.005)

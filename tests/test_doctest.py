@@ -7,21 +7,23 @@ from pyesg.processes import (
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
     heston_process,
+    ho_lee_process,
     ornstein_uhlenbeck_process,
     wiener_process,
 )
 
 
-MODULES = [
+MODULES = (
     academy_rate_model,
     utils,
     academy_rate_process,
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
     heston_process,
+    ho_lee_process,
     ornstein_uhlenbeck_process,
     wiener_process,
-]
+)
 
 
 def load_tests(loader, tests, ignored):  # pylint: disable=unused-argument
