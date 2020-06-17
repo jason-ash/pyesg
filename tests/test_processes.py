@@ -9,6 +9,7 @@ from pyesg import (
     CoxIngersollRossProcess,
     GeometricBrownianMotion,
     HestonProcess,
+    HoLeeProcess,
     JointWienerProcess,
     OrnsteinUhlenbeckProcess,
     WienerProcess,
@@ -210,6 +211,16 @@ class TestGeometricBrownianMotion(BaseProcessMixin, unittest.TestCase):
         cls.model = GeometricBrownianMotion.example()
         cls.single_x0 = np.array([100.0])
         cls.multiple_x0 = np.full(50, 100.0)
+
+
+class TestHoLeeProcess(BaseProcessMixin, unittest.TestCase):
+    """Test HoLeeProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = HoLeeProcess.example()
+        cls.single_x0 = np.array([0.03])
+        cls.multiple_x0 = np.full(50, 0.045)
 
 
 class TestOrnsteinUhlenbeckProcess(BaseProcessMixin, unittest.TestCase):

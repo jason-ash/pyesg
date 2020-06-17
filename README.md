@@ -210,6 +210,10 @@ model.standard_deviation(x0=100, dt=1.0)
 </details>
 
 <details>
+  <summary>Ho-Lee</summary>
+</details>
+
+<details>
   <summary>Ornstein-Uhlenbeck Process (Vasicek Model)</summary>
 </details>
 
