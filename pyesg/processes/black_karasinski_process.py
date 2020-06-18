@@ -41,7 +41,6 @@ class BlackKarasinskiProcess(OrnsteinUhlenbeckProcess):
         return dict(mu=self.mu, sigma=self.sigma, theta=self.theta)
 
     def _apply(self, x0: np.ndarray, dx: np.ndarray) -> np.ndarray:
-        # arithmetic addition to update x0
         return x0 * np.exp(dx)
 
     def _drift(self, x0: np.ndarray) -> np.ndarray:
