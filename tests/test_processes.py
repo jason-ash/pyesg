@@ -7,6 +7,7 @@ import pandas as pd
 from pyesg import (
     AcademyRateProcess,
     BlackDermanToyProcess,
+    BlackKarasinskiProcess,
     CoxIngersollRossProcess,
     GeometricBrownianMotion,
     HestonProcess,
@@ -200,6 +201,16 @@ class TestBlackDermanToyProcess(BaseProcessMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.model = BlackDermanToyProcess.example()
+        cls.single_x0 = np.array([0.03])
+        cls.multiple_x0 = np.full(50, 0.03)
+
+
+class TestBlackKarasinskiProcess(BaseProcessMixin, unittest.TestCase):
+    """Test BlackKarasinskiProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = BlackKarasinskiProcess.example()
         cls.single_x0 = np.array([0.03])
         cls.multiple_x0 = np.full(50, 0.03)
 

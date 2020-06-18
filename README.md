@@ -210,6 +210,10 @@ model.standard_deviation(x0=100, dt=1.0)
 </details>
 
 <details>
+  <summary>Black-Karasinski</summary>
+</details>
+
+<details>
   <summary>Cox-Ingersoll-Ross</summary>
 </details>
 
