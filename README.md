@@ -206,6 +206,10 @@ model.standard_deviation(x0=100, dt=1.0)
 </details>
 
 <details>
+  <summary>Black-Derman-Toy</summary>
+</details>
+
+<details>
   <summary>Cox-Ingersoll-Ross</summary>
 </details>
 

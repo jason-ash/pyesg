@@ -5,6 +5,7 @@ from pyesg.interpolators.nelson_siegel import NelsonSiegelInterpolator
 from pyesg.interpolators.svensson import SvenssonInterpolator
 
 from pyesg.processes.academy_rate_process import AcademyRateProcess
+from pyesg.processes.black_derman_toy_process import BlackDermanToyProcess
 from pyesg.processes.cox_ingersoll_ross_process import CoxIngersollRossProcess
 from pyesg.processes.geometric_brownian_motion import GeometricBrownianMotion
 from pyesg.processes.heston_process import HestonProcess
@@ -18,6 +19,7 @@ __all__ = (
     "NelsonSiegelInterpolator",
     "SvenssonInterpolator",
     "AcademyRateProcess",
+    "BlackDermanToyProcess",
     "CoxIngersollRossProcess",
     "GeometricBrownianMotion",
     "HestonProcess",

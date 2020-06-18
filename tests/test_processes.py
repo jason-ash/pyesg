@@ -6,6 +6,7 @@ import pandas as pd
 
 from pyesg import (
     AcademyRateProcess,
+    BlackDermanToyProcess,
     CoxIngersollRossProcess,
     GeometricBrownianMotion,
     HestonProcess,
@@ -191,6 +192,16 @@ class BaseProcessMixin:
             expected = expected.reshape(scen, step, dim, order="F")
         actual = self.model.rvs(scen, step, state)
         self.assertIsNone(np.testing.assert_array_equal(actual, expected))
+
+
+class TestBlackDermanToyProcess(BaseProcessMixin, unittest.TestCase):
+    """Test BlackDermanToyProcess"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = BlackDermanToyProcess.example()
+        cls.single_x0 = np.array([0.03])
+        cls.multiple_x0 = np.full(50, 0.03)
 
 
 class TestCoxIngersollRossProcess(BaseProcessMixin, unittest.TestCase):

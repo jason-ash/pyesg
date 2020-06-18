@@ -4,6 +4,7 @@ import doctest
 from pyesg import academy_rate_model, utils
 from pyesg.processes import (
     academy_rate_process,
+    black_derman_toy_process,
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
     heston_process,
@@ -17,6 +18,7 @@ MODULES = (
     academy_rate_model,
     utils,
     academy_rate_process,
+    black_derman_toy_process,
     cox_ingersoll_ross_process,
     geometric_brownian_motion,
     heston_process,
