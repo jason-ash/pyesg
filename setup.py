@@ -16,7 +16,16 @@ setup(
     author_email="jason@ashanalytics.com",
     packages=find_packages(),
     install_requires=["numpy", "pandas", "scipy"],
-    extras_require={"dev": ["coverage", "hypothesis", "pre-commit", "pylint", "mypy"]},
+    extras_require={
+        "dev": [
+            "black==19.10b0",
+            "coverage==5.2.1",
+            "hypothesis==5.24.4",
+            "pre-commit==2.6.0",
+            "pylint==2.5.3",
+            "mypy==0.782",
+        ]
+    },
     include_package_data=True,
     package_data={
         "pyesg": ["../README.md", "../LICENSE.md", "../MANIFEST.in", "datasets/*"]

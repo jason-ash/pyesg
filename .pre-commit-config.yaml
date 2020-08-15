@@ -9,10 +9,13 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
-  - repo: https://github.com/ambv/black
-    rev: stable
+  - repo: local
     hooks:
       - id: black
+        name: black
+        entry: black
+        language: system
+        types: [python]
   - repo: local
     hooks:
       - id: pylint
