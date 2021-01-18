@@ -29,6 +29,6 @@ jobs:
         run: |
           coverage run --source=pyesg -m unittest discover --verbose
       - name: Publish coverage report
-        uses: coverallsapp/github-action@v1.1.2
-        with:
-          github-token: ${{ github.token }}
+        run: |
+          pip install coveralls
+          coveralls
