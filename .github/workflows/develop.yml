@@ -31,6 +31,6 @@ jobs:
       - name: Publish coverage report
         run: |
           pip install coveralls==3.0.0
-          coveralls
+          coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
