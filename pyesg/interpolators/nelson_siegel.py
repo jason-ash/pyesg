@@ -45,7 +45,7 @@ class NelsonSiegelInterpolator(Interpolator):
         factor = (1 - np.exp(-X * tau)) / (X * tau)
         return beta0 + beta1 * factor + beta2 * (factor - np.exp(-X * tau))
 
-    def coefs(self) -> Dict:
+    def coefs(self) -> Dict[str, Optional[float]]:
         return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
 
     def fit(self, X: np.ndarray, y: np.ndarray):

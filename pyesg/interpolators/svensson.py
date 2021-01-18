@@ -51,7 +51,7 @@ class SvenssonInterpolator(Interpolator):
             + beta3 * (factor1 - np.exp(-X * tau1))
         )
 
-    def coefs(self) -> Dict:
+    def coefs(self) -> Dict[str, Optional[float]]:
         return dict(
             beta0=self.beta0,
             beta1=self.beta1,
