@@ -27,4 +27,8 @@ jobs:
           pre-commit run --all-files
       - name: Run test suite
         run: |
-          python -m unittest discover --verbose
+          coverage run --source=pyesg -m unittest discover --verbose
+      - name: Publish coverage report
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ github.token }}
