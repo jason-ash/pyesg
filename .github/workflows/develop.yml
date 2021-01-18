@@ -30,5 +30,7 @@ jobs:
           coverage run --source=pyesg -m unittest discover --verbose
       - name: Publish coverage report
         run: |
-          pip install coveralls
+          pip install coveralls==3.0.0
           coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
