@@ -1,9 +1,10 @@
 [MESSAGES CONTROL]
 disable=
-    bad-continuation,
-    duplicate-code,
     fixme,
     invalid-name
+
+[SIMILARITIES]
+min-similarity-lines=20
 
 [TYPECHECK]
 
