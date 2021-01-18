@@ -22,7 +22,7 @@ setup(
             "coverage==5.2.1",
             "hypothesis==5.24.4",
             "pre-commit==2.6.0",
-            "pylint==2.5.3",
+            "pylint==2.6.0",
             "mypy==0.782",
         ]
     },
