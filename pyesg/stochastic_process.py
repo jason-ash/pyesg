@@ -155,7 +155,8 @@ class StochasticProcess(ABC):
                 dx = np.einsum("ab,acb->ac", rvs, self.standard_deviation(x0=x0, dt=dt))
         return self.apply(self.expectation(x0=x0, dt=dt), dx)
 
-    def scenarios(  # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
+    def scenarios(
         self,
         x0: Array,
         dt: float,
@@ -202,11 +203,11 @@ class StochasticProcess(ABC):
         try:
             # can we broadcast the x0 array into the number of scenarios we want?
             samples[:, 0] = x0
-        except ValueError:
+        except ValueError as err:
             raise ValueError(
                 f"Could not broadcast the input array, with shape {x0.shape}, into "
                 f"the scenario output array, with shape {samples.shape}"
-            )
+            ) from err
 
         # then we iterate through scenarios along the timesteps dimension
         for i in range(n_steps):
