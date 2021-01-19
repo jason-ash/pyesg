@@ -15,8 +15,8 @@
   <a href="https://badge.fury.io/py/pyesg" target="_blank">
     <img src="https://badge.fury.io/py/pyesg.svg" alt="Pypi package version"/>
   </a>
-  <a href="https://circleci.com/gh/jason-ash/pyesg" target="_blank">
-    <img src="https://img.shields.io/circleci/build/github/jason-ash/pyesg" alt="Build status"/>
+  <a href="https://github.com/jason-ash/pyesg/actions" target="_blank">
+    <img src="https://img.shields.io/github/workflow/status/jason-ash/pyesg/pyesg%20CI/master" alt="Build status"/>
   </a>
   <a href="https://coveralls.io/github/jason-ash/pyesg?branch=master" target="_blank">
     <img src="https://coveralls.io/repos/github/jason-ash/pyesg/badge.svg?branch=master" alt="Coverage"/>
