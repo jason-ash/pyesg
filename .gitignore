@@ -2,6 +2,7 @@ __pycache__/
 build/
 dist/
 env/
+site/
 .vscode
 *.egg-info/
 
