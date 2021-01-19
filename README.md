@@ -272,4 +272,4 @@ nelson_siegel.predict(np.arange(1, 31, 1))
 </p>
 
 ## License
-Open Source and licensed under MIT, Copyright &copy; 2019-2020 Jason Ash
+Open Source and licensed under MIT, Copyright &copy; 2019-2021 Jason Ash
