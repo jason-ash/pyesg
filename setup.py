@@ -2,12 +2,17 @@
 from setuptools import setup, find_packages
 
 
+with open("pyesg/version.py") as f:
+    __version__ = None
+    exec(f.read(), globals())  # pylint: disable=exec-used
+
+
 with open("README.md") as f:
     README = f.read()
 
 setup(
     name="pyesg",
-    version="0.1.4",
+    version=__version__,
     description="Economic Scenario Generator for Python",
     long_description=README,
     long_description_content_type="text/markdown",

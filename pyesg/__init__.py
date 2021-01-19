@@ -14,6 +14,7 @@ from pyesg.processes.ho_lee_process import HoLeeProcess
 from pyesg.processes.ornstein_uhlenbeck_process import OrnsteinUhlenbeckProcess
 from pyesg.processes.wiener_process import JointWienerProcess, WienerProcess
 
+from pyesg.version import __version__
 
 __all__ = (
     "AcademyRateModel",
@@ -30,6 +31,3 @@ __all__ = (
     "JointWienerProcess",
     "WienerProcess",
 )
-
-
-__version__ = "0.1.4"
