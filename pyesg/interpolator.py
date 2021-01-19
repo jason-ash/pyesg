@@ -11,9 +11,7 @@ class Interpolator(ABC):
         return f"<pyesg.{self.__class__.__qualname__}>"
 
     @abstractmethod
-    def __call__(
-        self, X: Union[float, np.ndarray], **params: float
-    ) -> Union[float, np.ndarray]:
+    def __call__(self, X: Union[float, np.ndarray], **params: float) -> np.ndarray:
         """Returns the Interpolator estimate of a rate at maturity X"""
 
     def is_fit(self) -> bool:
@@ -42,7 +40,7 @@ class Interpolator(ABC):
         self : returns an instance of self
         """
 
-    def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def predict(self, X: Union[float, np.ndarray]) -> np.ndarray:
         """Returns the predicted values from an array of independent values"""
         if self.is_fit():
             # reassure mypy that in this branch we are only dealing with floats

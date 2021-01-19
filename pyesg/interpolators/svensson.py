@@ -33,9 +33,7 @@ class SvenssonInterpolator(Interpolator):
         self.beta2: Optional[float] = None  # fit parameter
         self.beta3: Optional[float] = None  # fit parameter
 
-    def __call__(
-        self, X: Union[float, np.ndarray], **params: float
-    ) -> Union[float, np.ndarray]:
+    def __call__(self, X: Union[float, np.ndarray], **params: float) -> np.ndarray:
         beta0 = params["beta0"]
         beta1 = params["beta1"]
         beta2 = params["beta2"]

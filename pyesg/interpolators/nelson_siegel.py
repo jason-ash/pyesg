@@ -34,9 +34,7 @@ class NelsonSiegelInterpolator(Interpolator):
         self.beta1: Optional[float] = None  # fit parameter
         self.beta2: Optional[float] = None  # fit parameter
 
-    def __call__(
-        self, X: Union[float, np.ndarray], **params: float
-    ) -> Union[float, np.ndarray]:
+    def __call__(self, X: Union[float, np.ndarray], **params: float) -> np.ndarray:
         """Returns the Nelson-Siegel interpolated value at a point, x"""
         beta0 = params["beta0"]
         beta1 = params["beta1"]
