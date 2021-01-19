@@ -39,7 +39,7 @@ class SvenssonInterpolator(Interpolator):
         beta2 = params["beta2"]
         beta3 = params["beta3"]
         tau0 = params["tau0"]
-        tau1: float = params["tau1"]
+        tau1 = params["tau1"]
         factor0 = (1 - np.exp(-X * tau0)) / (X * tau0)
         factor1 = (1 - np.exp(-X * tau1)) / (X * tau1)
         return (

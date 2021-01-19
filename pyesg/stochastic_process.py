@@ -64,9 +64,7 @@ class StochasticProcess(ABC):
 
     @classmethod
     @abstractmethod
-    def example(
-        cls,
-    ) -> "StochasticProcess":  # creates an instance of the class with default parameters
+    def example(cls) -> "StochasticProcess":  # returns an instance of the subclass
         """
         Creates an instance of this model with sensible default parameters, primarily to
         be able to visualize or understand the dynamics of the model quickly.
