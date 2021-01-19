@@ -1,0 +1,6 @@
+site_name: pyesg
+site_description: "Economic scenario generator for python: simulate stocks, interest rates, and other stochastic processes."
+repo_url: https://github.com/jason-ash/pyesg
+docs_dir: src
+theme:
+  name: readthedocs
