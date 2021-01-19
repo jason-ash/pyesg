@@ -54,5 +54,5 @@ class CoxIngersollRossProcess(StochasticProcess):
         return self.sigma * x0 ** 0.5
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "CoxIngersollRossProcess":
         return cls(mu=0.05, sigma=0.02, theta=0.1)

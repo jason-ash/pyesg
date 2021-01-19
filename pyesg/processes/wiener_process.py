@@ -56,7 +56,7 @@ class WienerProcess(StochasticProcess):
         return np.full_like(x0, self.sigma, dtype=np.float64)
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "WienerProcess":
         return cls(mu=0.05, sigma=0.2)
 
 
@@ -119,7 +119,7 @@ class JointWienerProcess(StochasticProcess):
         return volatility @ cholesky
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "JointWienerProcess":
         return cls(
             mu=[0.05, 0.03], sigma=[0.20, 0.15], correlation=[[1.0, 0.5], [0.5, 1.0]]
         )

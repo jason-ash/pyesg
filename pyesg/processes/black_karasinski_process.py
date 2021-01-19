@@ -50,5 +50,5 @@ class BlackKarasinskiProcess(OrnsteinUhlenbeckProcess):
         return super()._drift(x0=np.log(x0))
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "BlackKarasinskiProcess":
         return cls(mu=0.01, sigma=0.005, theta=0.01)

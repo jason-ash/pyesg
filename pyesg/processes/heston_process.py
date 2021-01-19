@@ -101,5 +101,5 @@ class HestonProcess(StochasticProcess):
         return diffusion @ cholesky
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "HestonProcess":
         return cls(mu=0.05, kappa=0.8, sigma=0.001, theta=0.05, rho=-0.5)

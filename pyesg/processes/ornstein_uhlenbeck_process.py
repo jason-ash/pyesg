@@ -53,5 +53,5 @@ class OrnsteinUhlenbeckProcess(StochasticProcess):
         return np.full_like(x0, self.sigma, dtype=np.float64)
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "OrnsteinUhlenbeckProcess":
         return cls(mu=0.05, sigma=0.015, theta=0.15)

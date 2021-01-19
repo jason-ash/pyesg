@@ -51,7 +51,8 @@ def interpolate(
     rates : np.ndarray, an array of rates with shape (n_scenarios, n_steps, maturities)
     """
     # the nelson-siegel factor in the equation r(t) = b_0 + b_1 * factor(t)
-    f = lambda t: (1 - np.exp(-tau * t)) / (tau * t)
+    def f(t: float) -> np.ndarray:
+        return (1 - np.exp(-tau * t)) / (tau * t)
 
     # an array of the betas that fit each time step of rates provided
     betas = np.zeros(shape=(short_rate.shape[0], short_rate.shape[1], 2))

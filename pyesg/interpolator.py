@@ -11,9 +11,7 @@ class Interpolator(ABC):
         return f"<pyesg.{self.__class__.__qualname__}>"
 
     @abstractmethod
-    def __call__(
-        self, X: Union[float, np.ndarray], **params
-    ) -> Union[float, np.ndarray]:
+    def __call__(self, X: Union[float, np.ndarray], **params: float) -> np.ndarray:
         """Returns the Interpolator estimate of a rate at maturity X"""
 
     def is_fit(self) -> bool:
@@ -28,7 +26,7 @@ class Interpolator(ABC):
         """
 
     @abstractmethod
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "Interpolator":
         """
         Fits the interpolator using ordinary least squares
 
@@ -42,8 +40,9 @@ class Interpolator(ABC):
         self : returns an instance of self
         """
 
-    def predict(self, X: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+    def predict(self, X: Union[float, np.ndarray]) -> np.ndarray:
         """Returns the predicted values from an array of independent values"""
         if self.is_fit():
-            return self(X, **self.coefs())
+            # reassure mypy that in this branch we are only dealing with floats
+            return self(X, **self.coefs())  # type: ignore
         raise RuntimeError("Must call 'fit' first!")
