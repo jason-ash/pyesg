@@ -264,7 +264,7 @@ class AcademyRateProcess(StochasticProcess):
         return diffusion @ cholesky
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "AcademyRateProcess":
         return cls(
             beta1=0.00509,
             beta2=0.02685,

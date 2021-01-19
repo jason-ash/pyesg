@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-def _read_data(file_name: str, **kwargs) -> Union[pd.Series, pd.DataFrame]:
+def _read_data(file_name: str, **kwargs: Any) -> Union[pd.Series, pd.DataFrame]:
     """Reads a data file from pyesg/data. Optionally provide kwargs to pd.read_csv"""
     directory = pathlib.Path(__file__).parents[0]
     file_path = pathlib.Path(directory, file_name).resolve()
@@ -71,7 +71,7 @@ def load_academy_sample_scenario() -> Dict[str, Any]:
     return output
 
 
-def load_us_stocks(**kwargs) -> pd.DataFrame:
+def load_us_stocks(**kwargs: Any) -> pd.DataFrame:
     """
     Returns a DataFrame with historical stock prices for AAPL, MSFT, and AMZN.
 
@@ -87,7 +87,7 @@ def load_us_stocks(**kwargs) -> pd.DataFrame:
     )
 
 
-def load_ust_historical(**kwargs) -> pd.DataFrame:
+def load_ust_historical(**kwargs: Any) -> pd.DataFrame:
     """
     Returns a DataFrame of US Treasury rates for select maturities at monthly intervals
     starting from April 1953 through December 2018.

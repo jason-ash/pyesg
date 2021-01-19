@@ -53,5 +53,5 @@ class HoLeeProcess(StochasticProcess):
         return np.full_like(x0, self.sigma, dtype=np.float64)
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "HoLeeProcess":
         return cls(sigma=0.015, theta=0.005)

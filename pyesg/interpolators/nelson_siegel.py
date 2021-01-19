@@ -1,5 +1,5 @@
 """Nelson-Siegel rate curve interpolator"""
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 import numpy as np
 from scipy import optimize
 
@@ -35,7 +35,7 @@ class NelsonSiegelInterpolator(Interpolator):
         self.beta2: Optional[float] = None  # fit parameter
 
     def __call__(
-        self, X: Union[float, np.ndarray], **params
+        self, X: Union[float, np.ndarray], **params: float
     ) -> Union[float, np.ndarray]:
         """Returns the Nelson-Siegel interpolated value at a point, x"""
         beta0 = params["beta0"]
@@ -48,7 +48,7 @@ class NelsonSiegelInterpolator(Interpolator):
     def coefs(self) -> Dict[str, Optional[float]]:
         return dict(beta0=self.beta0, beta1=self.beta1, beta2=self.beta2, tau=self.tau)
 
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "NelsonSiegelInterpolator":
         """
         Fits the Nelson-Siegel interpolator using ordinary least squares
 
@@ -63,14 +63,15 @@ class NelsonSiegelInterpolator(Interpolator):
         """
         if self._fit_tau:
             # solve for all betas and tau
-            def f(x0, x, y):
+            def f(x0: List[float], x: np.ndarray, y: np.ndarray) -> np.ndarray:
                 return self(x, beta0=x0[0], beta1=x0[1], beta2=x0[2], tau=x0[3]) - y
 
             ls = optimize.least_squares(f, x0=[0.01, 0.01, 0.01, 1.0], args=(X, y))
             self.beta0, self.beta1, self.beta2, self.tau = ls.x
         else:
             # keep tau fixed; solve for all betas
-            def f(x0, x, y):
+            def f(x0: List[float], x: np.ndarray, y: np.ndarray) -> np.ndarray:
+                assert self.tau is not None  # convince mypy we have a value for tau
                 return self(x, beta0=x0[0], beta1=x0[1], beta2=x0[2], tau=self.tau) - y
 
             ls = optimize.least_squares(f, x0=[0.01, 0.01, 0.01], args=(X, y))

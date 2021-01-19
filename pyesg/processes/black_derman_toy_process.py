@@ -50,5 +50,5 @@ class BlackDermanToyProcess(HoLeeProcess):
         return super()._diffusion(x0=np.log(x0))
 
     @classmethod
-    def example(cls):
+    def example(cls) -> "BlackDermanToyProcess":
         return cls(sigma=0.015, theta=0.005)

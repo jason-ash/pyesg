@@ -1,5 +1,5 @@
 """Nelson-Siegel-Svensson rate curve interpolator"""
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 import numpy as np
 from scipy import optimize
 
@@ -34,14 +34,14 @@ class SvenssonInterpolator(Interpolator):
         self.beta3: Optional[float] = None  # fit parameter
 
     def __call__(
-        self, X: Union[float, np.ndarray], **params
+        self, X: Union[float, np.ndarray], **params: float
     ) -> Union[float, np.ndarray]:
         beta0 = params["beta0"]
         beta1 = params["beta1"]
         beta2 = params["beta2"]
         beta3 = params["beta3"]
         tau0 = params["tau0"]
-        tau1 = params["tau1"]
+        tau1: float = params["tau1"]
         factor0 = (1 - np.exp(-X * tau0)) / (X * tau0)
         factor1 = (1 - np.exp(-X * tau1)) / (X * tau1)
         return (
@@ -61,7 +61,7 @@ class SvenssonInterpolator(Interpolator):
             tau1=self.tau1,
         )
 
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "SvenssonInterpolator":
         """
         Fits the Nelson-Siegel-Svensson interpolator using ordinary least squares
 
@@ -76,7 +76,7 @@ class SvenssonInterpolator(Interpolator):
         """
         if self._fit_tau:
             # solve for all betas and taus
-            def f(x0, x, y):
+            def f(x0: List[float], x: np.ndarray, y: np.ndarray) -> np.ndarray:
                 return (
                     self(
                         x,
@@ -96,7 +96,9 @@ class SvenssonInterpolator(Interpolator):
             self.beta0, self.beta1, self.beta2, self.beta3, self.tau0, self.tau1 = ls.x
         else:
             # keep taus fixed; solve for all betas
-            def f(x0, x, y):
+            def f(x0: List[float], x: np.ndarray, y: np.ndarray) -> np.ndarray:
+                assert self.tau0 is not None  # convince mypy we have a value for tau0
+                assert self.tau1 is not None  # convince mypy we have a value for tau1
                 return (
                     self(
                         x,
