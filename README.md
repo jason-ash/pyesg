@@ -7,19 +7,19 @@
 
 <p align="center">
   <a href="https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs" target="_blank">
-    <img src="https://img.shields.io/apm/l/atomic-design-ui.svg?" alt="License"/>
+    <img src="https://img.shields.io/apm/l/atomic-design-ui.svg?style=for-the-badge" alt="License"/>
   </a>
   <a href="https://pypi.python.org/pypi/pyesg/" target="_blank">
-    <img src="https://img.shields.io/pypi/pyversions/pyesg.svg" alt="Supported python versions"/>
+    <img src="https://img.shields.io/pypi/pyversions/pyesg.svg?style=for-the-badge" alt="Supported python versions"/>
   </a>
   <a href="https://badge.fury.io/py/pyesg" target="_blank">
-    <img src="https://badge.fury.io/py/pyesg.svg" alt="Pypi package version"/>
+    <img src="https://img.shields.io/pypi/v/pyesg?color=light%20green&label=pypi%20package&style=for-the-badge" alt="Pypi package version"/>
   </a>
   <a href="https://github.com/jason-ash/pyesg/actions" target="_blank">
-    <img src="https://img.shields.io/github/workflow/status/jason-ash/pyesg/pyesg%20CI/master" alt="Build status"/>
+    <img src="https://img.shields.io/github/workflow/status/jason-ash/pyesg/pyesg%20CI/master?style=for-the-badge" alt="Build status"/>
   </a>
   <a href="https://coveralls.io/github/jason-ash/pyesg?branch=master" target="_blank">
-    <img src="https://coveralls.io/repos/github/jason-ash/pyesg/badge.svg?branch=master" alt="Coverage"/>
+    <img src="https://img.shields.io/coveralls/github/jason-ash/pyesg?style=for-the-badge" alt="Coverage"/>
   </a>
 </p>
 
