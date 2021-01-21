@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/jason-ash/pyesg/master/docs/images/pyesg.png" width="450" />
+  <img src="docs/images/pyesg.png" width="450" />
 </p>
 <p align="center">
   <em>Simulate stocks, interest rates, and other stochastic processes.<br><strong>pyesg</strong> is a lightning fast economic scenario generator for Python.</em>
@@ -268,7 +268,7 @@ nelson_siegel.predict(np.arange(1, 31, 1))
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/jason-ash/pyesg/master/docs/images/NelsonSiegel.png" width="600">
+  <img src="docs/images/NelsonSiegel.png" width="600">
 </p>
 
 ## License
