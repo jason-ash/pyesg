@@ -9,5 +9,7 @@ env/
 .mypy_cache
 .hypothesis
 
+.DS_Store
+
 *.ipynb
 *.ipynb_checkpoints
