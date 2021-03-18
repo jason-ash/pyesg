@@ -44,3 +44,10 @@ class TestUSTreasuryDataset(BaseDatasetMixin, unittest.TestCase):
         end = self.dataset.index[-1]
         self.assertEqual(start, (1953, 4))
         self.assertEqual(end, (2019, 12))
+
+    def test_realistic_rates(self):
+        """
+        Make sure rates are realistic given known historical rates which
+        have never exceeded 30% in the united states
+        """
+        self.assertTrue((self.dataset < 0.4).all().all())
